@@ -437,7 +437,7 @@ export default function CreateFormPage() {
               {rules.length === 0 && (
                 <div className="text-center py-8 border border-gray-200 rounded-lg">
                   <p className="text-gray-500 text-sm">
-                    No rules added yet. Select a category and click "Add Rule" to
+                    No rules added yet. Select a category and click &quot;Add Rule&quot; to
                     get started.
                   </p>
                 </div>
