@@ -9,6 +9,7 @@ interface FileUploadProps {
   disabled?: boolean;
   label?: string;
   required?: boolean;
+  helperText?: string;
 }
 
 export const FileUpload: React.FC<FileUploadProps> = ({
@@ -18,6 +19,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   disabled = false,
   label,
   required = false,
+  helperText,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -206,6 +208,9 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         <p className="mt-1 text-sm text-red-600" role="alert">
           {error}
         </p>
+      )}
+      {helperText && !error && (
+        <p className="mt-1 text-sm text-gray-500">{helperText}</p>
       )}
     </div>
   );
