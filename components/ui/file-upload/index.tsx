@@ -124,7 +124,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
           ${
             isDragging
-              ? "border-blue-500 bg-blue-50"
+              ? "border-primary bg-primary-50"
               : "border-gray-300 hover:border-gray-400"
           }
           ${disabled ? "opacity-50 cursor-not-allowed" : ""}
@@ -193,7 +193,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
               </svg>
             </div>
             <p className="text-sm text-gray-600">
-              <span className="font-medium text-blue-600">
+              <span className="font-medium text-primary">
                 Klik untuk memilih file
               </span>{" "}
               atau drag & drop

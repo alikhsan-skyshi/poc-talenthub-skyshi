@@ -190,7 +190,7 @@ export default function MyCandidatePage() {
         </div>
 
         {/* Search and Filter Section */}
-        <div className="bg-white shadow rounded-lg p-4 mb-4">
+        <div className="bg-white shadow-sm rounded-xl p-4 mb-4 border border-gray-100">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <Input
               type="text"
@@ -244,7 +244,7 @@ export default function MyCandidatePage() {
           </div>
         </div>
 
-        <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-100">
           <CandidateTable
             candidates={paginatedCandidates}
             selectedCandidateIds={selectedCandidateIds}

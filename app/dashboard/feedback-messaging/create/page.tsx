@@ -14,7 +14,16 @@ export default function CreateTemplatePage() {
   const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState(
+    `Dear {candidate_name},\n\n` +
+    `Thank you for your interest in the {position} position at our company.\n\n` +
+    `We have reviewed your application and would like to inform you that {feedback_message}.\n\n` +
+    `{additional_information}\n\n` +
+    `If you have any questions, please feel free to contact us.\n\n` +
+    `Best regards,\n` +
+    `{your_name}\n` +
+    `{company_name}`
+  );
   const [attachment, setAttachment] = useState<File | null>(null);
 
   const handleSave = () => {
@@ -38,7 +47,16 @@ export default function CreateTemplatePage() {
     ) {
       setTitle("");
       setSubject("");
-      setContent("");
+      setContent(
+        `Dear {candidate_name},\n\n` +
+        `Thank you for your interest in the {position} position at our company.\n\n` +
+        `We have reviewed your application and would like to inform you that {feedback_message}.\n\n` +
+        `{additional_information}\n\n` +
+        `If you have any questions, please feel free to contact us.\n\n` +
+        `Best regards,\n` +
+        `{your_name}\n` +
+        `{company_name}`
+      );
       setAttachment(null);
     }
   };
@@ -55,7 +73,7 @@ export default function CreateTemplatePage() {
 
         <div className="space-y-6">
           {/* Title */}
-          <div className="bg-white shadow rounded-lg p-6">
+          <div className="bg-white shadow-sm rounded-xl border border-gray-100 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Template Information
             </h2>
@@ -69,7 +87,7 @@ export default function CreateTemplatePage() {
           </div>
 
           {/* Email Template */}
-          <div className="bg-white shadow rounded-lg p-6">
+          <div className="bg-white shadow-sm rounded-xl border border-gray-100 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Email Template
             </h2>
@@ -100,7 +118,7 @@ export default function CreateTemplatePage() {
           </div>
 
           {/* Actions */}
-          <div className="bg-white shadow rounded-lg p-6">
+          <div className="bg-white shadow-sm rounded-xl border border-gray-100 p-6">
             <div className="flex justify-between items-center">
               <Button variant="outline" onClick={() => router.back()}>
                 Cancel

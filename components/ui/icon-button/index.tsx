@@ -19,8 +19,8 @@ export const IconButton: React.FC<IconButtonProps> = ({
   ...props
 }) => {
   const variantStyles = {
-    primary: "text-blue-600 hover:bg-blue-50 hover:text-blue-700",
-    secondary: "text-gray-600 hover:bg-gray-50 hover:text-gray-700",
+    primary: "text-primary hover:bg-primary-50 hover:text-primary-700",
+    secondary: "text-gray-600 hover:bg-light hover:text-gray-700",
     danger: "text-red-600 hover:bg-red-50 hover:text-red-700",
     info: "text-green-600 hover:bg-green-50 hover:text-green-700",
   };

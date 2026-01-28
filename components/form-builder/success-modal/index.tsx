@@ -82,7 +82,7 @@ export const SuccessModal: React.FC<SuccessModalProps> = ({
 
         {/* Due Date Section */}
         {!isDueDateSet ? (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Set Due Date <span className="text-red-500">*</span>
             </label>

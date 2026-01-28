@@ -1,32 +1,37 @@
 "use client";
 
 import type { ApplicationForm } from "@/types/application-form";
-import { Toggle } from "@/components/ui/toggle";
 import { IconButton } from "@/components/ui/icon-button";
 import {
   EyeIcon,
   PencilIcon,
-  TrashIcon,
   CopyIcon,
 } from "@/components/ui/icons";
 
 interface FormTableProps {
   forms: ApplicationForm[];
+  selectedFormIds?: Set<string>;
   onViewCandidates: (formId: string) => void;
   onEdit: (formId: string) => void;
   onDelete: (formId: string) => void;
-  onToggleStatus: (formId: string) => void;
   onCopyLink: (formId: string) => void;
+  onSelectForm?: (formId: string, isSelected: boolean) => void;
+  onSelectAll?: (isSelected: boolean) => void;
 }
 
 export const FormTable: React.FC<FormTableProps> = ({
   forms,
+  selectedFormIds = new Set(),
   onViewCandidates,
   onEdit,
   onDelete,
-  onToggleStatus,
   onCopyLink,
+  onSelectForm,
+  onSelectAll,
 }) => {
+  const allSelected =
+    forms.length > 0 && forms.every((form) => selectedFormIds.has(form.id));
+  const someSelected = forms.some((form) => selectedFormIds.has(form.id));
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("id-ID", {
       year: "numeric",
@@ -60,6 +65,22 @@ export const FormTable: React.FC<FormTableProps> = ({
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
+            {onSelectAll && (
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12"
+              >
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  ref={(input) => {
+                    if (input) input.indeterminate = someSelected && !allSelected;
+                  }}
+                  onChange={(e) => onSelectAll(e.target.checked)}
+                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                />
+              </th>
+            )}
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -107,13 +128,33 @@ export const FormTable: React.FC<FormTableProps> = ({
         <tbody className="bg-white divide-y divide-gray-200">
           {forms.length === 0 ? (
             <tr>
-              <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+              <td
+                colSpan={onSelectAll ? 8 : 7}
+                className="px-6 py-4 text-center text-gray-500"
+              >
                 No forms found
               </td>
             </tr>
           ) : (
-            forms.map((form) => (
-              <tr key={form.id} className="hover:bg-gray-50">
+            forms.map((form) => {
+              const isSelected = selectedFormIds.has(form.id);
+              return (
+                <tr
+                  key={form.id}
+                  className={`hover:bg-light ${isSelected ? "bg-primary-50" : ""}`}
+                >
+                  {onSelectForm && (
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) =>
+                          onSelectForm(form.id, e.target.checked)
+                        }
+                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                      />
+                    </td>
+                  )}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">
                     {form.companyName}
@@ -149,10 +190,6 @@ export const FormTable: React.FC<FormTableProps> = ({
                       onClick={() => onCopyLink(form.id)}
                       tooltip="Copy Link"
                     />
-                    <Toggle
-                      checked={form.status === "open"}
-                      onChange={() => onToggleStatus(form.id)}
-                    />
                     <IconButton
                       icon={<EyeIcon />}
                       variant="info"
@@ -167,17 +204,11 @@ export const FormTable: React.FC<FormTableProps> = ({
                       onClick={() => onEdit(form.id)}
                       tooltip="Edit Form"
                     />
-                    <IconButton
-                      icon={<TrashIcon />}
-                      variant="danger"
-                      size="sm"
-                      onClick={() => onDelete(form.id)}
-                      tooltip="Delete Form"
-                    />
                   </div>
                 </td>
               </tr>
-            ))
+              );
+            })
           )}
         </tbody>
       </table>

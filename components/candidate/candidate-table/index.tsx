@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import type { Candidate, CandidateStage } from "@/types/candidate";
+import type { Candidate, CandidateStage, CandidateStatus } from "@/types/candidate";
 import { IconButton } from "@/components/ui/icon-button";
 import { DocumentIcon, ChatBubbleIcon } from "@/components/ui/icons";
 
@@ -12,6 +12,7 @@ interface CandidateTableProps {
   onChatWhatsApp: (candidate: Candidate) => void;
   onSelectCandidate?: (candidateId: string, isSelected: boolean) => void;
   onSelectAll?: (isSelected: boolean) => void;
+  showStatus?: boolean; // If true, show "Status" column instead of "Stage"
 }
 
 export const CandidateTable: React.FC<CandidateTableProps> = ({
@@ -21,6 +22,7 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
   onChatWhatsApp,
   onSelectCandidate,
   onSelectAll,
+  showStatus = false,
 }) => {
   const allSelected =
     candidates.length > 0 &&
@@ -70,6 +72,37 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
     );
   };
 
+  const getStatusBadge = (status?: CandidateStatus) => {
+    if (!status) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+          Not specified
+        </span>
+      );
+    }
+
+    const statusConfig = {
+      qualified: {
+        label: "Qualified",
+        className: "bg-green-100 text-green-800",
+      },
+      not_qualified: {
+        label: "Not Qualified",
+        className: "bg-red-100 text-red-800",
+      },
+    };
+
+    const config = statusConfig[status];
+
+    return (
+      <span
+        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.className}`}
+      >
+        {config.label}
+      </span>
+    );
+  };
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
@@ -87,7 +120,7 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
                     if (input) input.indeterminate = someSelected && !allSelected;
                   }}
                   onChange={(e) => onSelectAll(e.target.checked)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                 />
               </th>
             )}
@@ -131,7 +164,7 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
               scope="col"
               className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Stage
+              {showStatus ? "Status" : "Stage"}
             </th>
             <th
               scope="col"
@@ -157,7 +190,7 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
               return (
                 <tr
                   key={candidate.id}
-                  className={`hover:bg-gray-50 ${isSelected ? "bg-blue-50" : ""}`}
+                  className={`hover:bg-light ${isSelected ? "bg-primary-50" : ""}`}
                 >
                   {onSelectCandidate && (
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -167,7 +200,7 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
                         onChange={(e) =>
                           onSelectCandidate(candidate.id, e.target.checked)
                         }
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                       />
                     </td>
                   )}
@@ -200,7 +233,9 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
-                    {getStageBadge(candidate.stage)}
+                    {showStatus
+                      ? getStatusBadge(candidate.status)
+                      : getStageBadge(candidate.stage)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                     <div className="flex items-center justify-center gap-2">

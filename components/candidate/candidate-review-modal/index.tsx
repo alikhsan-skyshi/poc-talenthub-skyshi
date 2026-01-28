@@ -318,7 +318,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                       href={candidate.cvUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:text-blue-700"
+                      className="text-sm text-primary hover:text-primary-700"
                     >
                       Open in new tab
                     </a>
@@ -342,40 +342,54 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                 {candidate.applicationHistory &&
                 candidate.applicationHistory.length > 0 ? (
                   <div className="space-y-3">
-                    {candidate.applicationHistory.map((history) => (
-                      <div
-                        key={history.id}
-                        className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
-                      >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-medium text-gray-900">
-                              {history.jobTitle}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {history.companyName}
-                            </p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              Applied on {formatDate(history.appliedAt)}
-                            </p>
-                          </div>
-                          <span
-                            className={`
+                    {candidate.applicationHistory.map((history) => {
+                      // Check if this is the active form (matching candidate's formTitle or role)
+                      const isActiveForm =
+                        candidate.formTitle === history.jobTitle ||
+                        candidate.role === history.jobTitle;
+                      
+                      return (
+                        <div
+                          key={history.id}
+                          className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-gray-900">
+                                  {history.jobTitle}
+                                </p>
+                                {isActiveForm && (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                                    Active Form
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600">
+                                {history.companyName}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Applied on {formatDate(history.appliedAt)}
+                              </p>
+                            </div>
+                            <span
+                              className={`
                             px-2.5 py-0.5 rounded-full text-xs font-medium
                             ${
                               history.status === "ready_for_interview"
                                 ? "bg-green-100 text-green-800"
                                 : history.status === "cv_review"
                                 ? "bg-yellow-100 text-yellow-800"
-                                : "bg-blue-100 text-blue-800"
+                                : "bg-primary-100 text-primary-800"
                             }
                           `}
-                          >
-                            {history.status.replace("_", " ")}
-                          </span>
+                            >
+                              {history.status.replace("_", " ")}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-12 border border-gray-200 rounded-lg">
@@ -407,42 +421,12 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                         return `${day}/${month}/${year} ${hours}.${minutes}`;
                       };
 
-                      const getStatusBadge = (status: string) => {
-                        const statusConfig = {
-                          sent: {
-                            label: "Sent",
-                            className: "bg-blue-100 text-blue-800",
-                          },
-                          delivered: {
-                            label: "Delivered",
-                            className: "bg-yellow-100 text-yellow-800",
-                          },
-                          read: {
-                            label: "Read",
-                            className: "bg-green-100 text-green-800",
-                          },
-                        };
-
-                        const config =
-                          statusConfig[
-                            status as keyof typeof statusConfig
-                          ] || statusConfig.sent;
-
-                        return (
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.className}`}
-                          >
-                            {config.label}
-                          </span>
-                        );
-                      };
-
                       return (
                         <div
                           key={feedback.id}
                           className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
                         >
-                          <div className="flex justify-between items-start mb-2">
+                          <div className="mb-2">
                             <div className="flex-1">
                               <p className="font-medium text-gray-900">
                                 {feedback.templateTitle}
@@ -451,7 +435,6 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                                 {feedback.subject}
                               </p>
                             </div>
-                            {getStatusBadge(feedback.status)}
                           </div>
                           <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
                             <div className="text-xs text-gray-500">

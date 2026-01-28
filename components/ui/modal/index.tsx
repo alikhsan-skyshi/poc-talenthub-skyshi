@@ -36,10 +36,10 @@ export const Modal: React.FC<ModalProps> = ({
           onClick={onClose}
         ></div>
         <div
-          className={`relative bg-white rounded-lg shadow-xl ${sizeStyles[size]} w-full`}
+          className={`relative bg-white rounded-xl shadow-xl border border-gray-100 ${sizeStyles[size]} w-full`}
         >
           {title && (
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between p-6 border-b border-gray-100">
               <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
               <IconButton
                 icon={<XMarkIcon />}

@@ -296,7 +296,7 @@ export default function CreateFormPage() {
 
         <div className="space-y-6">
           {/* Basic Information */}
-          <div className="bg-white shadow rounded-lg p-6">
+          <div className="bg-white shadow-sm rounded-xl border border-gray-100 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Basic Information
             </h2>
@@ -320,7 +320,7 @@ export default function CreateFormPage() {
           </div>
 
           {/* Rules Section */}
-          <div className="bg-white shadow rounded-lg p-6">
+          <div className="bg-white shadow-sm rounded-xl border border-gray-100 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Rules</h2>
             <div className="space-y-4">
               {/* Add Rule */}
@@ -446,7 +446,7 @@ export default function CreateFormPage() {
           </div>
 
           {/* Form Builder */}
-          <div className="bg-white shadow rounded-lg p-6">
+          <div className="bg-white shadow-sm rounded-xl border border-gray-100 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               Form Fields
             </h2>
@@ -454,7 +454,7 @@ export default function CreateFormPage() {
           </div>
 
           {/* Actions */}
-          <div className="bg-white shadow rounded-lg p-6">
+          <div className="bg-white shadow-sm rounded-xl border border-gray-100 p-6">
             <div className="flex justify-between items-center">
               <Button variant="outline" onClick={() => router.back()}>
                 Cancel

@@ -3,19 +3,29 @@
 import React from "react";
 import type { FeedbackTemplate } from "@/types/feedback-template";
 import { IconButton } from "@/components/ui/icon-button";
-import { PencilIcon, TrashIcon } from "@/components/ui/icons";
+import { PencilIcon } from "@/components/ui/icons";
 
 interface TemplateTableProps {
   templates: FeedbackTemplate[];
+  selectedTemplateIds?: Set<string>;
   onEdit: (templateId: string) => void;
   onDelete: (templateId: string) => void;
+  onSelectTemplate?: (templateId: string, isSelected: boolean) => void;
+  onSelectAll?: (isSelected: boolean) => void;
 }
 
 export const TemplateTable: React.FC<TemplateTableProps> = ({
   templates,
+  selectedTemplateIds = new Set(),
   onEdit,
   onDelete,
+  onSelectTemplate,
+  onSelectAll,
 }) => {
+  const allSelected =
+    templates.length > 0 &&
+    templates.every((t) => selectedTemplateIds.has(t.id));
+  const someSelected = templates.some((t) => selectedTemplateIds.has(t.id));
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("id-ID", {
       year: "numeric",
@@ -32,6 +42,22 @@ export const TemplateTable: React.FC<TemplateTableProps> = ({
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
+            {onSelectAll && (
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12"
+              >
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  ref={(input) => {
+                    if (input) input.indeterminate = someSelected && !allSelected;
+                  }}
+                  onChange={(e) => onSelectAll(e.target.checked)}
+                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                />
+              </th>
+            )}
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -67,13 +93,33 @@ export const TemplateTable: React.FC<TemplateTableProps> = ({
         <tbody className="bg-white divide-y divide-gray-200">
           {templates.length === 0 ? (
             <tr>
-              <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+              <td
+                colSpan={onSelectAll ? 6 : 5}
+                className="px-6 py-4 text-center text-gray-500"
+              >
                 No templates found
               </td>
             </tr>
           ) : (
-            templates.map((template) => (
-              <tr key={template.id} className="hover:bg-gray-50">
+            templates.map((template) => {
+              const isSelected = selectedTemplateIds.has(template.id);
+              return (
+                <tr
+                  key={template.id}
+                  className={`hover:bg-light ${isSelected ? "bg-primary-50" : ""}`}
+                >
+                  {onSelectTemplate && (
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) =>
+                          onSelectTemplate(template.id, e.target.checked)
+                        }
+                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                      />
+                    </td>
+                  )}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">
                     {template.title}
@@ -103,17 +149,11 @@ export const TemplateTable: React.FC<TemplateTableProps> = ({
                       onClick={() => onEdit(template.id)}
                       tooltip="Edit Template"
                     />
-                    <IconButton
-                      icon={<TrashIcon />}
-                      variant="danger"
-                      size="sm"
-                      onClick={() => onDelete(template.id)}
-                      tooltip="Delete Template"
-                    />
                   </div>
                 </td>
               </tr>
-            ))
+              );
+            })
           )}
         </tbody>
       </table>

@@ -10,6 +10,17 @@ export const dummyForms: ApplicationForm[] = [
     applicantCount: 42,
     status: "open",
     createdAt: new Date("2024-01-15T10:30:00"),
+    waves: [
+      {
+        waveNumber: 1,
+        openedAt: new Date("2024-01-15T10:30:00"),
+        closedAt: new Date("2024-01-25T18:00:00"),
+      },
+      {
+        waveNumber: 2,
+        openedAt: new Date("2024-02-01T09:00:00"),
+      },
+    ],
   },
   {
     id: "2",
@@ -37,6 +48,13 @@ export const dummyForms: ApplicationForm[] = [
     applicantCount: 19,
     status: "closed",
     createdAt: new Date("2024-01-10T11:00:00"),
+    waves: [
+      {
+        waveNumber: 1,
+        openedAt: new Date("2024-01-10T11:00:00"),
+        closedAt: new Date("2024-01-20T17:00:00"),
+      },
+    ],
   },
   {
     id: "5",
