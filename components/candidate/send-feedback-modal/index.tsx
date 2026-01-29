@@ -94,7 +94,7 @@ export const SendFeedbackModal: React.FC<SendFeedbackModalProps> = ({
           {previewContent}
         </div>
         <p className="text-xs text-gray-500 mt-3 italic">
-          Note: This preview shows how the message will appear to candidates. Variables like {"{candidate_name}"} will be replaced with each candidate's actual information.
+          Note: This preview shows how the message will appear to candidates. Variables like {"{candidate_name}"} will be replaced with each candidate&apos;s actual information.
         </p>
       </div>
     );

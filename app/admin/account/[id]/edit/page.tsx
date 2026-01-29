@@ -130,7 +130,7 @@ export default function EditAccountPage() {
                 Change Password
               </h2>
               <p className="text-sm text-gray-600 mb-4">
-                Leave blank if you don't want to change the password
+                Leave blank if you don&apos;t want to change the password
               </p>
 
               <div className="space-y-4">

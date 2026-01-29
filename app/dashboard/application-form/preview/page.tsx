@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/ui/file-upload";
@@ -72,9 +72,8 @@ const dummyCVData: Record<string, string | string[]> = {
   "motivation": "I am highly motivated to apply for the IT Project Manager Intern position as it aligns perfectly with my career goals in IT project management and service management. I am eager to learn and contribute to your Corporate IT team while gaining valuable experience in project coordination, asset management, and IT operations.",
 };
 
-export default function PreviewFormPage() {
+function PreviewFormPageContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [step, setStep] = useState<1 | 2 | "loading">(1);
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [formData, setFormData] = useState<{
@@ -464,5 +463,21 @@ export default function PreviewFormPage() {
         </div>
       </Modal>
     </DashboardLayout>
+  );
+}
+
+export default function PreviewFormPage() {
+  return (
+    <Suspense fallback={
+      <DashboardLayout>
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center py-12">
+            <p className="text-gray-500">Loading...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    }>
+      <PreviewFormPageContent />
+    </Suspense>
   );
 }
