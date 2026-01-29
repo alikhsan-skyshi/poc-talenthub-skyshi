@@ -4,11 +4,15 @@ import { useState, useMemo, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { CandidateTable } from "@/components/candidate/candidate-table";
 import { CandidateReviewModal } from "@/components/candidate/candidate-review-modal";
+import { SendFeedbackModal } from "@/components/candidate/send-feedback-modal";
+import { Modal } from "@/components/ui/modal";
 import { Pagination } from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { CheckIcon } from "@/components/ui/icons";
 import { dummyCandidates } from "@/lib/data/dummy-candidates";
+import { dummyTemplates } from "@/lib/data/dummy-templates";
 import { enrichCandidateData } from "@/lib/data/candidate-details";
 import type { Candidate, CandidateStage } from "@/types/candidate";
 
@@ -20,6 +24,19 @@ export default function MyCandidatePage() {
   const [selectedCandidate, setSelectedCandidate] =
     useState<Candidate | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isSendFeedbackModalOpen, setIsSendFeedbackModalOpen] = useState(false);
+  const [isSendToCodaSuccessOpen, setIsSendToCodaSuccessOpen] = useState(false);
+  const [codaLink, setCodaLink] = useState("");
+  const [sentCandidatesCount, setSentCandidatesCount] = useState(0);
+  const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false);
+  const [isArchiveSuccessOpen, setIsArchiveSuccessOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false);
+  const [isTakeOutConfirmOpen, setIsTakeOutConfirmOpen] = useState(false);
+  const [isTakeOutSuccessOpen, setIsTakeOutSuccessOpen] = useState(false);
+  const [archivedCount, setArchivedCount] = useState(0);
+  const [deletedCount, setDeletedCount] = useState(0);
+  const [takenOutCount, setTakenOutCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [stageFilter, setStageFilter] = useState<CandidateStage | "all">("all");
   const [selectedCandidateIds, setSelectedCandidateIds] = useState<Set<string>>(
@@ -100,10 +117,63 @@ export default function MyCandidatePage() {
       alert("Please select at least one candidate to archive");
       return;
     }
-    // TODO: Implement archive functionality
-    alert(
-      `Archive ${selectedCandidateIds.size} candidate(s) - Feature coming soon`
-    );
+    setIsArchiveConfirmOpen(true);
+  };
+
+  const handleTakeOut = () => {
+    if (selectedCandidateIds.size === 0) {
+      alert("Please select at least one candidate to take out");
+      return;
+    }
+    setIsTakeOutConfirmOpen(true);
+  };
+
+  const handleConfirmTakeOut = async () => {
+    setIsTakeOutConfirmOpen(false);
+    const count = selectedCandidateIds.size;
+    
+    // TODO: Implement actual API call to take out candidates
+    // Simulate API call
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // In production, this would be:
+      // await fetch('/api/candidates/take-out', {
+      //   method: 'POST',
+      //   body: JSON.stringify({ candidateIds: Array.from(selectedCandidateIds) }),
+      // });
+      
+      setTakenOutCount(count);
+      setSelectedCandidateIds(new Set());
+      setIsTakeOutSuccessOpen(true);
+    } catch (error) {
+      console.error("Error taking out candidates:", error);
+      alert("Failed to take out candidates. Please try again.");
+    }
+  };
+
+  const handleConfirmArchive = async () => {
+    setIsArchiveConfirmOpen(false);
+    const count = selectedCandidateIds.size;
+    
+    // TODO: Implement actual API call to archive candidates
+    // Simulate API call
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // In production, this would be:
+      // await fetch('/api/candidates/archive', {
+      //   method: 'POST',
+      //   body: JSON.stringify({ candidateIds: Array.from(selectedCandidateIds) }),
+      // });
+      
+      setArchivedCount(count);
+      setSelectedCandidateIds(new Set());
+      setIsArchiveSuccessOpen(true);
+    } catch (error) {
+      console.error("Error archiving candidates:", error);
+      alert("Failed to archive candidates. Please try again.");
+    }
   };
 
   const handleBulkDelete = () => {
@@ -111,16 +181,32 @@ export default function MyCandidatePage() {
       alert("Please select at least one candidate to delete");
       return;
     }
+    setIsDeleteConfirmOpen(true);
+  };
 
-    if (
-      confirm(
-        `Are you sure you want to delete ${selectedCandidateIds.size} candidate(s)?`
-      )
-    ) {
+  const handleConfirmDelete = async () => {
+    setIsDeleteConfirmOpen(false);
+    const count = selectedCandidateIds.size;
+    
+    // TODO: Implement actual API call to delete candidates
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // In production, this would be:
+      // await fetch('/api/candidates/delete', {
+      //   method: 'DELETE',
+      //   body: JSON.stringify({ candidateIds: Array.from(selectedCandidateIds) }),
+      // });
+      
       setCandidates((prev) =>
         prev.filter((c) => !selectedCandidateIds.has(c.id))
       );
+      setDeletedCount(count);
       setSelectedCandidateIds(new Set());
+      setIsDeleteSuccessOpen(true);
+    } catch (error) {
+      console.error("Error deleting candidates:", error);
+      alert("Failed to delete candidates. Please try again.");
     }
   };
 
@@ -129,21 +215,51 @@ export default function MyCandidatePage() {
       alert("Please select at least one candidate to send feedback");
       return;
     }
-    // TODO: Implement send feedback functionality
-    alert(
-      `Send feedback to ${selectedCandidateIds.size} candidate(s) - Feature coming soon`
-    );
+    setIsSendFeedbackModalOpen(true);
   };
 
-  const handleSendToCoda = () => {
+  const handleSendFeedbackSubmit = async (
+    templateId: string,
+    candidateIds: string[]
+  ) => {
+    // TODO: Implement actual API call to send feedback
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    
+    // In production, this would be:
+    // await fetch('/api/feedback/send', {
+    //   method: 'POST',
+    //   body: JSON.stringify({ templateId, candidateIds }),
+    // });
+    
+    console.log("Sending feedback:", { templateId, candidateIds });
+  };
+
+  const handleSendToCoda = async () => {
     if (selectedCandidateIds.size === 0) {
       alert("Please select at least one candidate to send to Coda");
       return;
     }
-    // TODO: Implement send to Coda functionality
-    alert(
-      `Send ${selectedCandidateIds.size} candidate(s) to Coda - Feature coming soon`
-    );
+
+    // TODO: Implement actual API call to send data to Coda
+    // Simulate API call
+    try {
+      // Simulate sending data to Coda
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      
+      // Generate Coda link (in production, this would come from the API response)
+      // For now, use a dummy Coda document link
+      // In production, the API would return the actual Coda document URL
+      const link = "https://coda.io/d/Talent-Hub_dQ1vX2abc3";
+      setCodaLink(link);
+      setSentCandidatesCount(selectedCandidateIds.size);
+      
+      // Show success modal
+      setIsSendToCodaSuccessOpen(true);
+    } catch (error) {
+      console.error("Error sending to Coda:", error);
+      alert("Failed to send data to Coda. Please try again.");
+    }
   };
 
   const handleSelectCandidate = (candidateId: string, isSelected: boolean) => {
@@ -234,6 +350,14 @@ export default function MyCandidatePage() {
               Archive
             </Button>
             <Button
+              variant="primary"
+              size="sm"
+              onClick={handleTakeOut}
+              disabled={selectedCandidateIds.size === 0}
+            >
+              Take Out
+            </Button>
+            <Button
               variant="danger"
               size="sm"
               onClick={handleBulkDelete}
@@ -272,6 +396,228 @@ export default function MyCandidatePage() {
         candidate={selectedCandidate}
         onStageChange={handleStageChange}
       />
+
+      <SendFeedbackModal
+        isOpen={isSendFeedbackModalOpen}
+        onClose={() => setIsSendFeedbackModalOpen(false)}
+        templates={dummyTemplates}
+        selectedCandidates={candidates.filter((c) =>
+          selectedCandidateIds.has(c.id)
+        )}
+        onSend={handleSendFeedbackSubmit}
+      />
+
+      {/* Send to Coda Success Modal */}
+      <Modal
+        isOpen={isSendToCodaSuccessOpen}
+        onClose={() => setIsSendToCodaSuccessOpen(false)}
+        title=""
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="flex items-center justify-center w-16 h-16 mx-auto bg-green-100 rounded-full">
+            <CheckIcon className="w-10 h-10 text-green-600" />
+          </div>
+          <div className="text-center">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Data Berhasil Dikirim ke Coda!
+            </h3>
+            <p className="text-gray-600 mb-2">
+              <strong>{sentCandidatesCount}</strong> data kandidat telah berhasil dikirim ke Coda.
+            </p>
+            <a
+              href={codaLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-700 underline font-medium inline-block mt-2"
+            >
+              Klik di sini untuk melihat
+            </a>
+          </div>
+          <div className="flex justify-center pt-4">
+            <Button
+              variant="primary"
+              onClick={() => setIsSendToCodaSuccessOpen(false)}
+            >
+              Tutup
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Archive Confirmation Modal */}
+      <Modal
+        isOpen={isArchiveConfirmOpen}
+        onClose={() => setIsArchiveConfirmOpen(false)}
+        title="Konfirmasi Archive"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            Apakah Anda yakin ingin mengarchive <strong>{selectedCandidateIds.size}</strong> kandidat yang dipilih?
+          </p>
+          <p className="text-sm text-gray-500">
+            Kandidat yang diarchive akan dipindahkan ke halaman Archive.
+          </p>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsArchiveConfirmOpen(false)}
+            >
+              Batal
+            </Button>
+            <Button variant="primary" onClick={handleConfirmArchive}>
+              Archive
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Archive Success Modal */}
+      <Modal
+        isOpen={isArchiveSuccessOpen}
+        onClose={() => setIsArchiveSuccessOpen(false)}
+        title=""
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="flex items-center justify-center w-16 h-16 mx-auto bg-green-100 rounded-full">
+            <CheckIcon className="w-10 h-10 text-green-600" />
+          </div>
+          <div className="text-center">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Kandidat Berhasil Diarchive!
+            </h3>
+            <p className="text-gray-600">
+              <strong>{archivedCount}</strong> kandidat telah berhasil diarchive dan dipindahkan ke halaman Archive.
+            </p>
+          </div>
+          <div className="flex justify-center pt-4">
+            <Button
+              variant="primary"
+              onClick={() => setIsArchiveSuccessOpen(false)}
+            >
+              Tutup
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        title="Konfirmasi Hapus"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            Apakah Anda yakin ingin menghapus <strong>{selectedCandidateIds.size}</strong> kandidat yang dipilih?
+          </p>
+          <p className="text-sm text-red-600 font-medium">
+            Tindakan ini tidak dapat dibatalkan. Data kandidat akan dihapus secara permanen.
+          </p>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteConfirmOpen(false)}
+            >
+              Batal
+            </Button>
+            <Button variant="danger" onClick={handleConfirmDelete}>
+              Hapus
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete Success Modal */}
+      <Modal
+        isOpen={isDeleteSuccessOpen}
+        onClose={() => setIsDeleteSuccessOpen(false)}
+        title=""
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="flex items-center justify-center w-16 h-16 mx-auto bg-green-100 rounded-full">
+            <CheckIcon className="w-10 h-10 text-green-600" />
+          </div>
+          <div className="text-center">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Kandidat Berhasil Dihapus!
+            </h3>
+            <p className="text-gray-600">
+              <strong>{deletedCount}</strong> kandidat telah berhasil dihapus.
+            </p>
+          </div>
+          <div className="flex justify-center pt-4">
+            <Button
+              variant="primary"
+              onClick={() => setIsDeleteSuccessOpen(false)}
+            >
+              Tutup
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Take Out Confirmation Modal */}
+      <Modal
+        isOpen={isTakeOutConfirmOpen}
+        onClose={() => setIsTakeOutConfirmOpen(false)}
+        title="Konfirmasi Take Out"
+        size="md"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            Apakah Anda yakin ingin mengambil <strong>{selectedCandidateIds.size}</strong> kandidat yang dipilih?
+          </p>
+          <p className="text-sm text-gray-500">
+            Kandidat yang diambil akan dikembalikan dari archive ke halaman My Candidate.
+          </p>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsTakeOutConfirmOpen(false)}
+            >
+              Batal
+            </Button>
+            <Button variant="primary" onClick={handleConfirmTakeOut}>
+              Take Out
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Take Out Success Modal */}
+      <Modal
+        isOpen={isTakeOutSuccessOpen}
+        onClose={() => setIsTakeOutSuccessOpen(false)}
+        title=""
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="flex items-center justify-center w-16 h-16 mx-auto bg-green-100 rounded-full">
+            <CheckIcon className="w-10 h-10 text-green-600" />
+          </div>
+          <div className="text-center">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Kandidat Berhasil Diambil!
+            </h3>
+            <p className="text-gray-600">
+              <strong>{takenOutCount}</strong> kandidat telah berhasil diambil dan dikembalikan ke halaman My Candidate.
+            </p>
+          </div>
+          <div className="flex justify-center pt-4">
+            <Button
+              variant="primary"
+              onClick={() => setIsTakeOutSuccessOpen(false)}
+            >
+              Tutup
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </DashboardLayout>
   );
 }

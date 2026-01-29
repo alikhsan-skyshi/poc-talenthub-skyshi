@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth-schema";
 import { useAuth } from "@/hooks/use-auth";
+import { useAuthStore } from "@/stores/auth-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form } from "@/components/ui/form";
@@ -28,7 +29,14 @@ export const LoginForm = () => {
     const result = await login(data);
 
     if (result.success) {
-      router.push("/dashboard");
+      // Get user from auth store to check role
+      const user = useAuthStore.getState().user;
+      // Redirect based on role
+      if (user?.role === "admin") {
+        router.push("/admin");
+      } else {
+        router.push("/dashboard");
+      }
     } else {
       setError(result.error || "Login failed. Please try again.");
     }

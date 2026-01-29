@@ -192,7 +192,7 @@ export default function ArchivePage() {
               onClick={handleTakeOut}
               disabled={selectedCandidateIds.size === 0}
             >
-              Take Out
+              Pick
             </Button>
             <Button
               variant="danger"

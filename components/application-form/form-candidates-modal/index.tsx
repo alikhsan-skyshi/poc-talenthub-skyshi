@@ -119,26 +119,26 @@ export const FormCandidatesModal: React.FC<FormCandidatesModalProps> = ({
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">
-                      Gelombang {group.wave.waveNumber}
+                      Wave {group.wave.waveNumber}
                     </h3>
                     <div className="text-sm text-gray-600 mt-1">
                       <span>
-                        Dibuka: {formatDate(group.wave.openedAt)}
+                        Opened: {formatDate(group.wave.openedAt)}
                       </span>
                       {group.wave.closedAt && (
                         <span className="ml-4">
-                          Ditutup: {formatDate(group.wave.closedAt)}
+                          Closed: {formatDate(group.wave.closedAt)}
                         </span>
                       )}
                       {!group.wave.closedAt && (
                         <span className="ml-4 text-green-600 font-medium">
-                          (Masih Terbuka)
+                          (Still Open)
                         </span>
                       )}
                     </div>
                   </div>
                   <div className="text-sm text-gray-600">
-                    {group.candidates.length} kandidat
+                    {group.candidates.length} candidates
                   </div>
                 </div>
               </div>
@@ -146,7 +146,7 @@ export const FormCandidatesModal: React.FC<FormCandidatesModalProps> = ({
               {/* Candidates Table */}
               {group.candidates.length === 0 ? (
                 <div className="text-center py-4 text-gray-500 text-sm">
-                  Tidak ada kandidat pada gelombang ini
+                  No candidates in this wave
                 </div>
               ) : (
                 <div className="overflow-x-auto">

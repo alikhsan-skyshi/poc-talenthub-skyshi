@@ -302,20 +302,20 @@ export default function FormCandidatesPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    Gelombang {currentWave.wave.waveNumber}
+                    Wave {currentWave.wave.waveNumber}
                   </h3>
                   <div className="text-sm text-gray-600 mt-1">
                     <span>
-                      Dibuka: {formatDate(currentWave.wave.openedAt)}
+                      Opened: {formatDate(currentWave.wave.openedAt)}
                     </span>
                     {currentWave.wave.closedAt && (
                       <span className="ml-4">
-                        Ditutup: {formatDate(currentWave.wave.closedAt)}
+                        Closed: {formatDate(currentWave.wave.closedAt)}
                       </span>
                     )}
                     {!currentWave.wave.closedAt && (
                       <span className="ml-4 text-green-600 font-medium">
-                        (Masih Terbuka)
+                        (Still Open)
                       </span>
                     )}
                   </div>
@@ -432,10 +432,10 @@ export default function FormCandidatesPage() {
                   className="flex items-center gap-2"
                 >
                   <ArrowLeftIcon className="w-4 h-4" />
-                  Previous Gelombang
+                  Previous Wave
                 </Button>
                 <div className="text-sm text-gray-600">
-                  Gelombang {currentWaveIndex + 1} dari {candidateGroups.length}
+                  Wave {currentWaveIndex + 1} of {candidateGroups.length}
                 </div>
                 <Button
                   variant="secondary"
@@ -444,7 +444,7 @@ export default function FormCandidatesPage() {
                   disabled={currentWaveIndex === candidateGroups.length - 1}
                   className="flex items-center gap-2"
                 >
-                  Next Gelombang
+                  Next Wave
                   <ArrowLeftIcon className="w-4 h-4 rotate-180" />
                 </Button>
               </div>

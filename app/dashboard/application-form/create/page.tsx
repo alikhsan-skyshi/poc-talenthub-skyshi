@@ -12,7 +12,6 @@ import { SuccessModal } from "@/components/form-builder/success-modal";
 import { getDefaultFormFields } from "@/lib/data/default-form-fields";
 import { TrashIcon, PlusIcon, EyeIcon } from "@/components/ui/icons";
 import { IconButton } from "@/components/ui/icon-button";
-import { Modal } from "@/components/ui/modal";
 import { FileUpload } from "@/components/ui/file-upload";
 import type { FormField, FormRule, RuleCategory } from "@/types/form-builder";
 
@@ -25,7 +24,6 @@ export default function CreateFormPage() {
   const [selectedCategory, setSelectedCategory] = useState<RuleCategory | "">("");
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [formLink, setFormLink] = useState("");
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const handleSave = () => {
     // Validate
@@ -166,114 +164,6 @@ export default function CreateFormPage() {
     router.push("/dashboard/application-form");
   };
 
-  const renderPreviewField = (field: FormField) => {
-    switch (field.type) {
-      case "text":
-        return (
-          <Input
-            label={field.label}
-            placeholder={field.placeholder || "Enter text"}
-            required={field.required}
-            disabled={false}
-          />
-        );
-      case "number":
-        return (
-          <Input
-            type="number"
-            label={field.label}
-            placeholder={field.placeholder || "Enter number"}
-            required={field.required}
-            disabled={false}
-          />
-        );
-      case "dropdown":
-        return (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {field.label}
-              {field.required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-            <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Select an option</option>
-              {Array.isArray(field.value) &&
-                field.value.map((opt, idx) => (
-                  <option key={idx} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-            </select>
-          </div>
-        );
-      case "checkbox":
-        return (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {field.label}
-              {field.required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-            <div className="space-y-2">
-              {Array.isArray(field.value) &&
-                field.value.map((opt, idx) => (
-                  <label key={idx} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">{opt}</span>
-                  </label>
-                ))}
-            </div>
-          </div>
-        );
-      case "radio":
-        return (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {field.label}
-              {field.required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-            <div className="space-y-2">
-              {Array.isArray(field.value) &&
-                field.value.map((opt, idx) => (
-                  <label key={idx} className="flex items-center">
-                    <input
-                      type="radio"
-                      name={`radio-${field.id}`}
-                      className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">{opt}</span>
-                  </label>
-                ))}
-            </div>
-          </div>
-        );
-      case "date":
-        return (
-          <Input
-            type="date"
-            label={field.label}
-            required={field.required}
-            disabled={false}
-          />
-        );
-      case "file":
-        return (
-          <FileUpload
-            accept=".pdf,.doc,.docx"
-            maxSize={10}
-            label={field.label}
-            required={field.required}
-            disabled={false}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
     <DashboardLayout>
       <div className="max-w-5xl mx-auto">
@@ -286,7 +176,16 @@ export default function CreateFormPage() {
           </div>
           <Button
             variant="outline"
-            onClick={() => setIsPreviewOpen(true)}
+            onClick={() => {
+              // Store form data in sessionStorage for preview page
+              const previewData = {
+                title,
+                description,
+                fields,
+              };
+              sessionStorage.setItem("previewFormData", JSON.stringify(previewData));
+              router.push("/dashboard/application-form/preview");
+            }}
             className="flex items-center gap-2"
           >
             <EyeIcon className="w-4 h-4" />
@@ -477,50 +376,6 @@ export default function CreateFormPage() {
         onClose={handleSuccessClose}
         formLink={formLink}
       />
-
-      {/* Preview Modal */}
-      <Modal
-        isOpen={isPreviewOpen}
-        onClose={() => setIsPreviewOpen(false)}
-        title="Preview Form - Candidate View"
-        size="xl"
-      >
-        <div className="space-y-6">
-          {/* Form Title and Description */}
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              {title || "Form Title"}
-            </h2>
-            <p className="text-gray-600">
-              {description || "Form description will appear here"}
-            </p>
-          </div>
-
-          {/* Form Fields Preview */}
-          <div className="space-y-4 border-t border-gray-200 pt-6">
-            {fields.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">
-                No fields added yet. Add fields to see the preview.
-              </p>
-            ) : (
-              fields
-                .sort((a, b) => a.order - b.order)
-                .map((field) => (
-                  <div key={field.id}>{renderPreviewField(field)}</div>
-                ))
-            )}
-          </div>
-
-          {/* Preview Note */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
-            <p className="text-sm text-blue-800">
-              <strong>Note:</strong> This is a preview of how the form will
-              appear to candidates. Fields are interactive for preview purposes
-              only.
-            </p>
-          </div>
-        </div>
-      </Modal>
     </DashboardLayout>
   );
 }

@@ -139,9 +139,11 @@ export const FormFieldItem: React.FC<FormFieldItemProps> = ({
             <div className="text-gray-400 cursor-grab active:cursor-grabbing">
               <GripVerticalIcon className="w-5 h-5" />
             </div>
-            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-              {field.order + 1}
-            </span>
+            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
+              <span className="text-xs font-medium text-gray-600">
+                {field.order + 1}
+              </span>
+            </div>
           </div>
 
           <div className="flex-1">
