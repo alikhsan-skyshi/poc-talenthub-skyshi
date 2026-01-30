@@ -8,6 +8,7 @@ export interface FormField {
   value?: string | string[]; // For dropdown options or checkbox values
   required?: boolean;
   order: number;
+  createdBy?: "admin" | "user"; // Field created by admin or user (talent acquisition)
 }
 
 export type RuleCategory = "years_of_experience" | "expected_salary";

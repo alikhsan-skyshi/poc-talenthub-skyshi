@@ -38,88 +38,87 @@ export const TemplateTable: React.FC<TemplateTableProps> = ({
 
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <table className="min-w-full divide-y divide-gray-200">
+      <thead className="bg-gray-50">
+        <tr>
+          {onSelectAll && (
+            <th
+              scope="col"
+              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12"
+            >
+              <input
+                type="checkbox"
+                checked={allSelected}
+                ref={(input) => {
+                  if (input) input.indeterminate = someSelected && !allSelected;
+                }}
+                onChange={(e) => onSelectAll(e.target.checked)}
+                className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+              />
+            </th>
+          )}
+          <th
+            scope="col"
+            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Title
+          </th>
+          <th
+            scope="col"
+            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Created By
+          </th>
+          <th
+            scope="col"
+            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Created At
+          </th>
+          <th
+            scope="col"
+            className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Sent Count
+          </th>
+          <th
+            scope="col"
+            className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody className="bg-white divide-y divide-gray-200">
+        {templates.length === 0 ? (
           <tr>
-            {onSelectAll && (
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12"
-              >
-                <input
-                  type="checkbox"
-                  checked={allSelected}
-                  ref={(input) => {
-                    if (input) input.indeterminate = someSelected && !allSelected;
-                  }}
-                  onChange={(e) => onSelectAll(e.target.checked)}
-                  className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-                />
-              </th>
-            )}
-            <th
-              scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            <td
+              colSpan={onSelectAll ? 6 : 5}
+              className="px-6 py-4 text-center text-gray-500"
             >
-              Title
-            </th>
-            <th
-              scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Created By
-            </th>
-            <th
-              scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Created At
-            </th>
-            <th
-              scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Sent Count
-            </th>
-            <th
-              scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Actions
-            </th>
+              No templates found
+            </td>
           </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {templates.length === 0 ? (
-            <tr>
-              <td
-                colSpan={onSelectAll ? 6 : 5}
-                className="px-6 py-4 text-center text-gray-500"
+        ) : (
+          templates.map((template) => {
+            const isSelected = selectedTemplateIds.has(template.id);
+            return (
+              <tr
+                key={template.id}
+                className={`hover:bg-light ${isSelected ? "bg-primary-50" : ""}`}
               >
-                No templates found
-              </td>
-            </tr>
-          ) : (
-            templates.map((template) => {
-              const isSelected = selectedTemplateIds.has(template.id);
-              return (
-                <tr
-                  key={template.id}
-                  className={`hover:bg-light ${isSelected ? "bg-primary-50" : ""}`}
-                >
-                  {onSelectTemplate && (
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={(e) =>
-                          onSelectTemplate(template.id, e.target.checked)
-                        }
-                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-                      />
-                    </td>
-                  )}
+                {onSelectTemplate && (
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={(e) =>
+                        onSelectTemplate(template.id, e.target.checked)
+                      }
+                      className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                    />
+                  </td>
+                )}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">
                     {template.title}
@@ -152,11 +151,10 @@ export const TemplateTable: React.FC<TemplateTableProps> = ({
                   </div>
                 </td>
               </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
-    </div>
+            );
+          })
+        )}
+      </tbody>
+    </table>
   );
 };

@@ -1,19 +1,23 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Pagination } from "@/components/ui/pagination";
 import { TemplateTable } from "@/components/feedback-template/template-table";
 import { dummyTemplates } from "@/lib/data/dummy-templates";
 import type { FeedbackTemplate } from "@/types/feedback-template";
+
+const ITEMS_PER_PAGE = 10;
 
 export default function FeedbackMessagingPage() {
   const router = useRouter();
   const [templates, setTemplates] =
     useState<FeedbackTemplate[]>(dummyTemplates);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedTemplateIds, setSelectedTemplateIds] = useState<Set<string>>(
     new Set()
   );
@@ -37,6 +41,25 @@ export default function FeedbackMessagingPage() {
       template.title.toLowerCase().includes(query)
     );
   }, [templates, searchQuery]);
+
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredTemplates.length / ITEMS_PER_PAGE);
+  const paginatedTemplates = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredTemplates.slice(startIndex, endIndex);
+  }, [filteredTemplates, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleDelete = (templateId: string) => {
     if (confirm("Are you sure you want to delete this template?")) {
@@ -76,7 +99,7 @@ export default function FeedbackMessagingPage() {
 
   const handleSelectAll = (isSelected: boolean) => {
     if (isSelected) {
-      setSelectedTemplateIds(new Set(filteredTemplates.map((t) => t.id)));
+      setSelectedTemplateIds(new Set(paginatedTemplates.map((t) => t.id)));
     } else {
       setSelectedTemplateIds(new Set());
     }
@@ -122,14 +145,25 @@ export default function FeedbackMessagingPage() {
         </div>
 
         <div className="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-100">
-          <TemplateTable
-            templates={filteredTemplates}
-            selectedTemplateIds={selectedTemplateIds}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onSelectTemplate={handleSelectTemplate}
-            onSelectAll={handleSelectAll}
-          />
+          <div className="overflow-x-auto">
+            <TemplateTable
+              templates={paginatedTemplates}
+              selectedTemplateIds={selectedTemplateIds}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onSelectTemplate={handleSelectTemplate}
+              onSelectAll={handleSelectAll}
+            />
+          </div>
+          {totalPages > 0 && (
+            <div className="border-t border-gray-200">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
         </div>
       </div>
     </DashboardLayout>

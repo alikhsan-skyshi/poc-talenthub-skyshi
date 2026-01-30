@@ -11,11 +11,13 @@ import type { FormField, FieldType } from "@/types/form-builder";
 interface FormBuilderProps {
   fields: FormField[];
   onFieldsChange: (fields: FormField[]) => void;
+  hideAdminLabel?: boolean; // Hide "Created by Admin" label and allow editing (for admin view)
 }
 
 export const FormBuilder: React.FC<FormBuilderProps> = ({
   fields,
   onFieldsChange,
+  hideAdminLabel = false,
 }) => {
   const [draggedFieldId, setDraggedFieldId] = useState<string | null>(null);
   const [isAddingField, setIsAddingField] = useState(false);
@@ -39,18 +41,35 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
           : undefined,
       required: false,
       order: fields.length,
+      createdBy: "user", // Field created by talent acquisition user
     };
     onFieldsChange([...fields, newField]);
     setIsAddingField(false);
   };
 
   const handleUpdateField = (updatedField: FormField) => {
+    // Prevent updating admin fields only for user view (not admin view)
+    if (!hideAdminLabel) {
+      const existingField = fields.find((f) => f.id === updatedField.id);
+      if (existingField?.createdBy === "admin") {
+        alert("Cannot edit fields created by admin");
+        return;
+      }
+    }
     onFieldsChange(
       fields.map((f) => (f.id === updatedField.id ? updatedField : f))
     );
   };
 
   const handleDeleteField = (fieldId: string) => {
+    // Prevent deleting admin fields only for user view (not admin view)
+    if (!hideAdminLabel) {
+      const fieldToDelete = fields.find((f) => f.id === fieldId);
+      if (fieldToDelete?.createdBy === "admin") {
+        alert("Cannot delete fields created by admin");
+        return;
+      }
+    }
     const newFields = fields
       .filter((f) => f.id !== fieldId)
       .map((f, index) => ({ ...f, order: index }));
@@ -58,6 +77,12 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
   };
 
   const handleDragStart = (e: React.DragEvent, fieldId: string) => {
+    const field = fields.find((f) => f.id === fieldId);
+    // Prevent dragging admin fields only for user view (not admin view)
+    if (!hideAdminLabel && field?.createdBy === "admin") {
+      e.preventDefault();
+      return;
+    }
     setDraggedFieldId(fieldId);
     e.dataTransfer.effectAllowed = "move";
   };
@@ -70,6 +95,15 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
   const handleDrop = (e: React.DragEvent, targetFieldId: string) => {
     e.preventDefault();
     if (!draggedFieldId || draggedFieldId === targetFieldId) {
+      setDraggedFieldId(null);
+      return;
+    }
+
+    const draggedField = fields.find((f) => f.id === draggedFieldId);
+    const targetField = fields.find((f) => f.id === targetFieldId);
+
+    // Prevent dragging admin fields only for user view (not admin view)
+    if (!hideAdminLabel && draggedField?.createdBy === "admin") {
       setDraggedFieldId(null);
       return;
     }
@@ -124,6 +158,7 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
       ) : (
         <div className="space-y-3">
           {fields
+            .filter((field) => field.type !== "file") // Exclude file upload field as it's in separate section
             .sort((a, b) => a.order - b.order)
             .map((field) => (
               <FormFieldItem
@@ -135,6 +170,7 @@ export const FormBuilder: React.FC<FormBuilderProps> = ({
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 isDragging={draggedFieldId === field.id}
+                hideAdminLabel={hideAdminLabel}
               />
             ))}
         </div>

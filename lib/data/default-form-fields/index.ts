@@ -9,6 +9,7 @@ export const getDefaultFormFields = (): FormField[] => {
       placeholder: "Masukkan nama lengkap",
       required: true,
       order: 0,
+      createdBy: "admin",
     },
     {
       id: "default-field-2",
@@ -17,6 +18,7 @@ export const getDefaultFormFields = (): FormField[] => {
       placeholder: "Masukkan nomor handphone",
       required: true,
       order: 1,
+      createdBy: "admin",
     },
     {
       id: "default-field-3",
@@ -25,6 +27,7 @@ export const getDefaultFormFields = (): FormField[] => {
       placeholder: "Masukkan alamat email",
       required: true,
       order: 2,
+      createdBy: "admin",
     },
     {
       id: "default-field-4",
@@ -33,6 +36,7 @@ export const getDefaultFormFields = (): FormField[] => {
       value: ["LinkedIn", "Glints", "Jobstreet"],
       required: true,
       order: 3,
+      createdBy: "admin",
     },
     {
       id: "default-field-5",
@@ -41,6 +45,7 @@ export const getDefaultFormFields = (): FormField[] => {
       value: ["onsite", "hybrid", "remote", "flexible"],
       required: true,
       order: 4,
+      createdBy: "admin",
     },
     {
       id: "default-field-6",
@@ -49,14 +54,7 @@ export const getDefaultFormFields = (): FormField[] => {
       placeholder: "Pilih tanggal",
       required: false,
       order: 5,
-    },
-    {
-      id: "default-field-7",
-      type: "file",
-      label: "Upload CV",
-      placeholder: "Upload CV (PDF)",
-      required: true,
-      order: 6,
+      createdBy: "admin",
     },
   ];
 };

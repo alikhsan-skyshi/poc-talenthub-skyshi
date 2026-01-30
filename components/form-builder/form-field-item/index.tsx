@@ -16,6 +16,7 @@ interface FormFieldItemProps {
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent, fieldId: string) => void;
   isDragging: boolean;
+  hideAdminLabel?: boolean; // Hide "Created by Admin" label (for admin view)
 }
 
 export const FormFieldItem: React.FC<FormFieldItemProps> = ({
@@ -26,6 +27,7 @@ export const FormFieldItem: React.FC<FormFieldItemProps> = ({
   onDragOver,
   onDrop,
   isDragging,
+  hideAdminLabel = false,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
 
@@ -124,14 +126,21 @@ export const FormFieldItem: React.FC<FormFieldItemProps> = ({
   return (
     <>
       <div
-        draggable
-        onDragStart={(e) => onDragStart(e, field.id)}
+        draggable={hideAdminLabel || field.createdBy !== "admin"}
+        onDragStart={(e) => {
+          if (hideAdminLabel || field.createdBy !== "admin") {
+            onDragStart(e, field.id);
+          } else {
+            e.preventDefault();
+          }
+        }}
         onDragOver={onDragOver}
         onDrop={(e) => onDrop(e, field.id)}
         className={`
           bg-white border-2 rounded-lg p-4 mb-3 transition-all
           ${isDragging ? "border-blue-500 opacity-50" : "border-gray-200"}
-          hover:border-gray-300 cursor-move
+          ${field.createdBy === "admin" && !hideAdminLabel ? "border-blue-200 bg-blue-50/30" : ""}
+          ${hideAdminLabel || field.createdBy !== "admin" ? "hover:border-gray-300 cursor-move" : "cursor-default"}
         `}
       >
         <div className="flex items-start gap-3">
@@ -148,12 +157,19 @@ export const FormFieldItem: React.FC<FormFieldItemProps> = ({
 
           <div className="flex-1">
             <div className="mb-2">
-              <label className="block text-sm font-medium text-gray-700">
-                {field.label}
-                {field.required && (
-                  <span className="text-red-500 ml-1">*</span>
+              <div className="flex items-center gap-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  {field.label}
+                  {field.required && (
+                    <span className="text-red-500 ml-1">*</span>
+                  )}
+                </label>
+                {field.createdBy === "admin" && !hideAdminLabel && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                    Created by Admin
+                  </span>
                 )}
-              </label>
+              </div>
             </div>
             {getFieldPreview()}
             <div className="mt-2 text-xs text-gray-500">
@@ -162,36 +178,49 @@ export const FormFieldItem: React.FC<FormFieldItemProps> = ({
           </div>
 
           <div className="flex items-center gap-1 flex-shrink-0">
-            <IconButton
-              icon={<PencilIcon />}
-              variant="primary"
-              size="sm"
-              onClick={() => setIsEditing(true)}
-              tooltip="Edit Field"
-            />
-            <IconButton
-              icon={<TrashIcon />}
-              variant="danger"
-              size="sm"
-              onClick={() => onDelete(field.id)}
-              tooltip="Delete Field"
-            />
+            {/* Show edit/delete buttons for all fields in admin view, or non-admin fields in user view */}
+            {(hideAdminLabel || field.createdBy !== "admin") && (
+              <>
+                <IconButton
+                  icon={<PencilIcon />}
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                  tooltip="Edit Field"
+                />
+                <IconButton
+                  icon={<TrashIcon />}
+                  variant="danger"
+                  size="sm"
+                  onClick={() => onDelete(field.id)}
+                  tooltip="Delete Field"
+                />
+              </>
+            )}
+            {/* Show "Cannot edit/delete" only in user view for admin fields */}
+            {field.createdBy === "admin" && !hideAdminLabel && (
+              <div className="text-xs text-gray-400 italic">
+                Cannot edit/delete
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      <Modal
-        isOpen={isEditing}
-        onClose={() => setIsEditing(false)}
-        title="Edit Field"
-        size="md"
-      >
-        <FieldEditor
-          field={field}
-          onUpdate={onUpdate}
+      {(hideAdminLabel || field.createdBy !== "admin") && (
+        <Modal
+          isOpen={isEditing}
           onClose={() => setIsEditing(false)}
-        />
-      </Modal>
+          title="Edit Field"
+          size="md"
+        >
+          <FieldEditor
+            field={field}
+            onUpdate={onUpdate}
+            onClose={() => setIsEditing(false)}
+          />
+        </Modal>
+      )}
     </>
   );
 };

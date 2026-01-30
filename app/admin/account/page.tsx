@@ -1,18 +1,22 @@
 "use client";
 
 import { AdminLayout } from "@/components/layout/admin-layout";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { PencilIcon } from "@/components/ui/icons";
+import { Pagination } from "@/components/ui/pagination";
 import { useRouter } from "next/navigation";
+
+const ITEMS_PER_PAGE = 10;
 
 export default function AdminAccountPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Dummy account data
+  // Dummy account data - 10 users
   const accounts = [
     {
       id: "1",
@@ -42,14 +46,78 @@ export default function AdminAccountPage() {
       status: "inactive",
       createdAt: "2024-02-01",
     },
+    {
+      id: "5",
+      email: "recruiter4@talenthub.com",
+      name: "Alice Williams",
+      status: "active",
+      createdAt: "2024-02-05",
+    },
+    {
+      id: "6",
+      email: "recruiter5@talenthub.com",
+      name: "Charlie Brown",
+      status: "active",
+      createdAt: "2024-02-10",
+    },
+    {
+      id: "7",
+      email: "recruiter6@talenthub.com",
+      name: "Diana Prince",
+      status: "inactive",
+      createdAt: "2024-02-15",
+    },
+    {
+      id: "8",
+      email: "recruiter7@talenthub.com",
+      name: "Edward Norton",
+      status: "active",
+      createdAt: "2024-02-20",
+    },
+    {
+      id: "9",
+      email: "recruiter8@talenthub.com",
+      name: "Fiona Green",
+      status: "active",
+      createdAt: "2024-02-25",
+    },
+    {
+      id: "10",
+      email: "recruiter9@talenthub.com",
+      name: "George Miller",
+      status: "inactive",
+      createdAt: "2024-03-01",
+    },
   ];
 
-  const filteredAccounts = accounts.filter((account) => {
-    return (
-      account.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      account.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  });
+  // Filter accounts based on search query
+  const filteredAccounts = useMemo(() => {
+    return accounts.filter((account) => {
+      return (
+        account.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        account.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    });
+  }, [searchQuery]);
+
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredAccounts.length / ITEMS_PER_PAGE);
+  const paginatedAccounts = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredAccounts.slice(startIndex, endIndex);
+  }, [filteredAccounts, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const handleEdit = (accountId: string) => {
     router.push(`/admin/account/${accountId}/edit`);
@@ -104,49 +172,66 @@ export default function AdminAccountPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredAccounts.map((account) => (
-                  <tr
-                    key={account.id}
-                    className="hover:bg-light transition-colors"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{account.email}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {account.name}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          account.status === "active"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {account.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {account.createdAt}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center justify-center">
-                        <IconButton
-                          icon={<PencilIcon />}
-                          variant="primary"
-                          size="sm"
-                          onClick={() => handleEdit(account.id)}
-                          tooltip="Edit Account"
-                        />
-                      </div>
+                {paginatedAccounts.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                      No accounts found
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  paginatedAccounts.map((account) => (
+                    <tr
+                      key={account.id}
+                      className="hover:bg-light transition-colors"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{account.email}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {account.name}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            account.status === "active"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {account.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {account.createdAt}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center justify-center">
+                          <IconButton
+                            icon={<PencilIcon />}
+                            variant="primary"
+                            size="sm"
+                            onClick={() => handleEdit(account.id)}
+                            tooltip="Edit Account"
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
+          {totalPages > 0 && (
+            <div className="border-t border-gray-200">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
         </div>
       </div>
     </AdminLayout>

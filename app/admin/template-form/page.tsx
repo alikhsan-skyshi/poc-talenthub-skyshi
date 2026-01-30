@@ -45,7 +45,7 @@ export default function TemplateFormPage() {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
             Form Fields
           </h2>
-          <FormBuilder fields={fields} onFieldsChange={setFields} />
+          <FormBuilder fields={fields} onFieldsChange={setFields} hideAdminLabel={true} />
         </div>
       </div>
     </AdminLayout>
