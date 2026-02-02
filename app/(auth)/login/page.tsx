@@ -9,7 +9,7 @@ export default function LoginPage() {
             <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">TH</span>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">Talent Hub</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Skyshi-Hub</h1>
           </div>
           <p className="mt-2 text-sm text-gray-600">
             Sign in to your account to continue

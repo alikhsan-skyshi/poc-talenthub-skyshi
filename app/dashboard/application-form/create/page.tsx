@@ -218,21 +218,6 @@ export default function CreateFormPage() {
             </div>
           </div>
 
-          {/* Upload CV Section */}
-          <div className="bg-white shadow-sm rounded-xl border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Upload CV
-            </h2>
-            <FileUpload
-              accept=".pdf,.doc,.docx"
-              maxSize={10}
-              label="CV/Resume"
-              required
-              disabled={true}
-              helperText="This field is required and cannot be removed"
-            />
-          </div>
-
           {/* Rules Section */}
           <div className="bg-white shadow-sm rounded-xl border border-gray-100 p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Rules</h2>

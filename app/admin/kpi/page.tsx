@@ -54,7 +54,7 @@ export default function AdminKPIPage() {
       {
         id: "1",
         name: "John Doe",
-        email: "john.doe@talenthub.com",
+        email: "john.doe@skyshi-hub.com",
         stats: {
           totalForms: 0,
           totalApplicants: 0,
@@ -68,7 +68,7 @@ export default function AdminKPIPage() {
       {
         id: "2",
         name: "Jane Smith",
-        email: "jane.smith@talenthub.com",
+        email: "jane.smith@skyshi-hub.com",
         stats: {
           totalForms: 0,
           totalApplicants: 0,
@@ -82,7 +82,7 @@ export default function AdminKPIPage() {
       {
         id: "3",
         name: "Bob Johnson",
-        email: "bob.johnson@talenthub.com",
+        email: "bob.johnson@skyshi-hub.com",
         stats: {
           totalForms: 0,
           totalApplicants: 0,
@@ -96,7 +96,7 @@ export default function AdminKPIPage() {
       {
         id: "4",
         name: "Sarah Lee",
-        email: "sarah.lee@talenthub.com",
+        email: "sarah.lee@skyshi-hub.com",
         stats: {
           totalForms: 0,
           totalApplicants: 0,
@@ -110,7 +110,7 @@ export default function AdminKPIPage() {
       {
         id: "5",
         name: "Michael Tan",
-        email: "michael.tan@talenthub.com",
+        email: "michael.tan@skyshi-hub.com",
         stats: {
           totalForms: 0,
           totalApplicants: 0,
@@ -124,7 +124,7 @@ export default function AdminKPIPage() {
       {
         id: "6",
         name: "Dewi Putri",
-        email: "dewi.putri@talenthub.com",
+        email: "dewi.putri@skyshi-hub.com",
         stats: {
           totalForms: 0,
           totalApplicants: 0,
@@ -138,7 +138,7 @@ export default function AdminKPIPage() {
       {
         id: "7",
         name: "Andi Pratama",
-        email: "andi.pratama@talenthub.com",
+        email: "andi.pratama@skyshi-hub.com",
         stats: {
           totalForms: 0,
           totalApplicants: 0,
@@ -152,7 +152,7 @@ export default function AdminKPIPage() {
       {
         id: "8",
         name: "Nabila Rahma",
-        email: "nabila.rahma@talenthub.com",
+        email: "nabila.rahma@skyshi-hub.com",
         stats: {
           totalForms: 0,
           totalApplicants: 0,

@@ -23,19 +23,19 @@ export default function EditAccountPage() {
     const dummyAccounts: Record<string, { name: string; email: string }> = {
       "1": {
         name: "John Doe",
-        email: "recruiter1@talenthub.com",
+        email: "recruiter1@skyshi-hub.com",
       },
       "2": {
         name: "Jane Smith",
-        email: "recruiter2@talenthub.com",
+        email: "recruiter2@skyshi-hub.com",
       },
       "3": {
         name: "Admin User",
-        email: "admin@talenthub.com",
+        email: "admin@skyshi-hub.com",
       },
       "4": {
         name: "Bob Johnson",
-        email: "recruiter3@talenthub.com",
+        email: "recruiter3@skyshi-hub.com",
       },
     };
 

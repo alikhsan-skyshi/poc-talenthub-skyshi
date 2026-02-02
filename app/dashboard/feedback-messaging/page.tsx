@@ -110,7 +110,7 @@ export default function FeedbackMessagingPage() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">
-            Feedback Messaging
+            Feedback Template
           </h1>
           <p className="text-sm text-gray-600 mt-1">
             Create and manage feedback templates for candidates

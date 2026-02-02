@@ -14,30 +14,34 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    label: "Dashboard",
+    label: "New Candidates",
     href: "/dashboard",
   },
   {
-    label: "Application Form",
-    href: "/dashboard/application-form",
-  },
-  {
-    label: "My Candidate",
+    label: "In Review",
     href: "/dashboard/my-candidate",
   },
   {
-    label: "Feedback Messaging",
-    href: "/dashboard/feedback-messaging",
+    label: "Saved",
+    href: "/dashboard/archive",
   },
   {
-    label: "Archive",
-    href: "/dashboard/archive",
+    label: "Job Opening",
+    href: "/dashboard/application-form",
+  },
+  {
+    label: "Feedback Template",
+    href: "/dashboard/feedback-messaging",
   },
   {
     label: "Profile",
     href: "/dashboard/profile",
   },
 ];
+
+// Split navigation items into two sections
+const primaryNavItems = navItems.slice(0, 3); // Dashboard, My Candidate, Archive
+const secondaryNavItems = navItems.slice(3); // Application Form, Feedback Messaging, Profile
 
 export const Sidebar = () => {
   const pathname = usePathname();
@@ -58,7 +62,7 @@ export const Sidebar = () => {
             <span className="text-white font-bold text-sm">TH</span>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Talent Hub</h1>
+            <h1 className="text-xl font-bold text-gray-900">Skyshi-Hub</h1>
             <p className="text-xs text-gray-500 mt-0.5">Talent Acquisition</p>
           </div>
         </div>
@@ -66,8 +70,47 @@ export const Sidebar = () => {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-4">
+        {/* Primary Section: Backlog, In Review, Saved */}
+        <div className="mb-2">
+          <h3 className="px-4 py-1.5 text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+            Candidate Applications
+          </h3>
+        </div>
+        <ul className="space-y-1 mb-4">
+          {primaryNavItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className={`
+                    flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200
+                    ${
+                      isActive
+                        ? "bg-primary text-white shadow-sm"
+                        : "text-gray-700 hover:bg-light hover:text-primary"
+                    }
+                  `}
+                >
+                  {item.icon && <span className="mr-3">{item.icon}</span>}
+                  {item.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* Divider */}
+        <div className="my-4 border-t border-gray-200"></div>
+
+        {/* Secondary Section: Job Opening, Feedback Template, Profile */}
+        <div className="mb-2">
+          <h3 className="px-4 py-1.5 text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+            Others
+          </h3>
+        </div>
         <ul className="space-y-1">
-          {navItems.map((item) => {
+          {secondaryNavItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <li key={item.href}>

@@ -9,6 +9,7 @@ export interface FormField {
   required?: boolean;
   order: number;
   createdBy?: "admin" | "user"; // Field created by admin or user (talent acquisition)
+  pageId?: string; // ID of the page this field belongs to
 }
 
 export type RuleCategory = "years_of_experience" | "expected_salary";

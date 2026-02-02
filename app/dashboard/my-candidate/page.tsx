@@ -299,7 +299,7 @@ export default function MyCandidatePage() {
     <DashboardLayout>
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">My Candidate</h1>
+          <h1 className="text-2xl font-bold text-gray-900">In Review</h1>
           <p className="text-sm text-gray-600 mt-1">
             View and manage all your candidates
           </p>

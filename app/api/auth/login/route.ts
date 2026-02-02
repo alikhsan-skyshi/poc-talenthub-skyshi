@@ -8,14 +8,14 @@ const DUMMY_USERS: User[] = [
   {
     id: "1",
     username: "admin",
-    email: "admin@talenthub.com",
+    email: "admin@skyshi-hub.com",
     name: "Admin User",
     role: "admin",
   },
   {
     id: "2",
     username: "recruiter",
-    email: "recruiter@talenthub.com",
+    email: "recruiter@skyshi-hub.com",
     name: "Recruiter User",
     role: "recruiter",
   },
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     const user = DUMMY_USERS.find((u) => u.username === username) || {
       id: "1",
       username,
-      email: `${username}@talenthub.com`,
+      email: `${username}@skyshi-hub.com`,
       name: username.charAt(0).toUpperCase() + username.slice(1),
       role: "recruiter",
     };

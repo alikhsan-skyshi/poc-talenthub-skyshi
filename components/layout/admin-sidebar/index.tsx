@@ -50,7 +50,7 @@ export const AdminSidebar = () => {
             <span className="text-white font-bold text-sm">TH</span>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Talent Hub</h1>
+            <h1 className="text-xl font-bold text-gray-900">Skyshi-Hub</h1>
             <p className="text-xs text-gray-500 mt-0.5">Admin Panel</p>
           </div>
         </div>
