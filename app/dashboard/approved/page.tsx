@@ -7,16 +7,14 @@ import { CandidateReviewModal } from "@/components/candidate/candidate-review-mo
 import { SwitchJobModal } from "@/components/candidate/switch-job-modal";
 import { Pagination } from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { dummyCandidates } from "@/lib/data/dummy-candidates";
 import { enrichCandidateData } from "@/lib/data/candidate-details";
 import type {
   Candidate,
   CandidateStage,
-  ReadyFor,
 } from "@/types/candidate";
 import type { ApplicationForm } from "@/types/application-form";
+import { getJobOpeningOptions, getJobOpeningById } from "@/lib/data/job-openings";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -32,19 +30,10 @@ export default function ApprovedPage() {
   const [selectedCandidatesForSwitch, setSelectedCandidatesForSwitch] =
     useState<Candidate[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [readyForFilter, setReadyForFilter] = useState<ReadyFor | "all">("all");
-  const [selectedCandidateIds, setSelectedCandidateIds] = useState<Set<string>>(
-    new Set()
-  );
 
   // Filter and search candidates
   const filteredCandidates = useMemo(() => {
     let filtered = candidates;
-
-    // Filter by ready for
-    if (readyForFilter !== "all") {
-      filtered = filtered.filter((c) => c.readyFor === readyForFilter);
-    }
 
     // Search by name, role, or form
     if (searchQuery.trim()) {
@@ -58,12 +47,12 @@ export default function ApprovedPage() {
     }
 
     return filtered;
-  }, [candidates, searchQuery, readyForFilter]);
+  }, [candidates, searchQuery]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, readyForFilter]);
+  }, [searchQuery]);
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredCandidates.length / ITEMS_PER_PAGE);
@@ -104,38 +93,14 @@ export default function ApprovedPage() {
     }
   };
 
-  const handleReject = () => {
-    if (selectedCandidateIds.size === 0) {
-      alert("Please select at least one candidate to reject");
-      return;
-    }
-
-    if (
-      confirm(
-        `Are you sure you want to reject ${selectedCandidateIds.size} candidate(s)?`
-      )
-    ) {
-      setCandidates((prev) =>
-        prev.filter((c) => !selectedCandidateIds.has(c.id))
-      );
-      setSelectedCandidateIds(new Set());
-    }
-  };
-
-  const handleSwitchJob = () => {
-    if (selectedCandidateIds.size === 0) {
-      alert("Please select at least one candidate to switch job");
-      return;
-    }
-
-    const selectedCandidates = candidates.filter((c) =>
-      selectedCandidateIds.has(c.id)
-    );
-
-    if (selectedCandidates.length > 0) {
-      setSelectedCandidatesForSwitch(selectedCandidates);
-      setIsSwitchJobModalOpen(true);
-    }
+  const handleTransferSingle = (candidateId: string) => {
+    const candidate = candidates.find((c) => c.id === candidateId);
+    if (!candidate) return;
+    
+    // Close review modal and open switch job modal
+    setIsReviewModalOpen(false);
+    setSelectedCandidatesForSwitch([candidate]);
+    setIsSwitchJobModalOpen(true);
   };
 
   const handleConfirmSwitchJob = (targetJobOpening: ApplicationForm) => {
@@ -165,41 +130,15 @@ export default function ApprovedPage() {
 
     setIsSwitchJobModalOpen(false);
     setSelectedCandidatesForSwitch([]);
-    setSelectedCandidateIds(new Set());
   };
 
-  const handleSelectCandidate = (candidateId: string, isSelected: boolean) => {
-    setSelectedCandidateIds((prev) => {
-      const newSet = new Set(prev);
-      if (isSelected) {
-        newSet.add(candidateId);
-      } else {
-        newSet.delete(candidateId);
-      }
-      return newSet;
-    });
-  };
 
-  const handleSelectAll = (isSelected: boolean) => {
-    if (isSelected) {
-      setSelectedCandidateIds(new Set(paginatedCandidates.map((c) => c.id)));
-    } else {
-      setSelectedCandidateIds(new Set());
-    }
-  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const readyForOptions = [
-    { value: "all", label: "All Ready For" },
-    { value: "onsite", label: "Onsite" },
-    { value: "hybrid", label: "Hybrid" },
-    { value: "remote", label: "Remote" },
-    { value: "flexible", label: "Flexible" },
-  ];
 
   return (
     <DashboardLayout>
@@ -213,19 +152,12 @@ export default function ApprovedPage() {
 
         {/* Search and Filter Section */}
         <div className="bg-white shadow-sm rounded-xl p-4 mb-4 border border-gray-100">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-4">
             <Input
               type="text"
               placeholder="Search by name, role, or form..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <Select
-              options={readyForOptions}
-              value={readyForFilter}
-              onChange={(e) =>
-                setReadyForFilter(e.target.value as ReadyFor | "all")
-              }
             />
           </div>
         </div>
@@ -233,12 +165,13 @@ export default function ApprovedPage() {
         <div className="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-100">
           <CandidateTable
             candidates={paginatedCandidates}
-            selectedCandidateIds={selectedCandidateIds}
             onReviewCV={handleReviewCV}
             onChatWhatsApp={handleChatWhatsApp}
-            onSelectCandidate={handleSelectCandidate}
-            onSelectAll={handleSelectAll}
-            showStatus={true}
+            useLocationType={true}
+            hideNotSpecified={true}
+            hideActions={true}
+            hideStage={true}
+            onRowClick={handleReviewCV}
           />
           {totalPages > 1 && (
             <Pagination
@@ -258,6 +191,9 @@ export default function ApprovedPage() {
         }}
         candidate={selectedCandidate}
         onStageChange={handleStageChange}
+        hideStageSelector={true}
+        showApprovedButtons={true}
+        onTransferApproved={selectedCandidate ? () => handleTransferSingle(selectedCandidate.id) : undefined}
       />
 
       <SwitchJobModal
@@ -269,6 +205,7 @@ export default function ApprovedPage() {
         candidates={selectedCandidatesForSwitch}
         onConfirm={handleConfirmSwitchJob}
       />
+
     </DashboardLayout>
   );
 }

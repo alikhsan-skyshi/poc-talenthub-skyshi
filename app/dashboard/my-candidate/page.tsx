@@ -6,6 +6,7 @@ import { CandidateTable } from "@/components/candidate/candidate-table";
 import { CandidateReviewModal } from "@/components/candidate/candidate-review-modal";
 import { SendFeedbackModal } from "@/components/candidate/send-feedback-modal";
 import { SwitchJobModal } from "@/components/candidate/switch-job-modal";
+import { CandidateFeedbackModal } from "@/components/candidate/candidate-feedback-modal";
 import { Modal } from "@/components/ui/modal";
 import { Pagination } from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,7 @@ export default function MyCandidatePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCandidate, setSelectedCandidate] =
     useState<Candidate | null>(null);
+  const [selectedCandidateIndex, setSelectedCandidateIndex] = useState<number>(-1);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isSendFeedbackModalOpen, setIsSendFeedbackModalOpen] = useState(false);
   const [isSendToCodaSuccessOpen, setIsSendToCodaSuccessOpen] = useState(false);
@@ -32,13 +34,18 @@ export default function MyCandidatePage() {
   const [sentCandidatesCount, setSentCandidatesCount] = useState(0);
   const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false);
   const [isArchiveSuccessOpen, setIsArchiveSuccessOpen] = useState(false);
-  const [isRejectConfirmOpen, setIsRejectConfirmOpen] = useState(false);
   const [isRejectSuccessOpen, setIsRejectSuccessOpen] = useState(false);
   const [isTakeOutConfirmOpen, setIsTakeOutConfirmOpen] = useState(false);
   const [isTakeOutSuccessOpen, setIsTakeOutSuccessOpen] = useState(false);
   const [isSwitchJobModalOpen, setIsSwitchJobModalOpen] = useState(false);
   const [selectedCandidatesForSwitch, setSelectedCandidatesForSwitch] =
     useState<Candidate[]>([]);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [feedbackModalCandidate, setFeedbackModalCandidate] = useState<Candidate | null>(null);
+  const [feedbackModalCandidates, setFeedbackModalCandidates] = useState<Candidate[]>([]);
+  const [feedbackActionType, setFeedbackActionType] = useState<"approve" | "reject">("approve");
+  const [pendingActionCandidates, setPendingActionCandidates] = useState<Set<string>>(new Set());
+  const [totalCandidatesToProcess, setTotalCandidatesToProcess] = useState(0);
   const [archivedCount, setArchivedCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
   const [takenOutCount, setTakenOutCount] = useState(0);
@@ -88,7 +95,34 @@ export default function MyCandidatePage() {
     if (candidate) {
       const enrichedCandidate = enrichCandidateData(candidate);
       setSelectedCandidate(enrichedCandidate);
+      // Find index in filtered candidates
+      const index = filteredCandidates.findIndex((c) => c.id === candidateId);
+      setSelectedCandidateIndex(index);
       setIsReviewModalOpen(true);
+    }
+  };
+
+  const handlePreviousCandidate = () => {
+    if (selectedCandidateIndex > 0) {
+      const prevIndex = selectedCandidateIndex - 1;
+      const prevCandidate = filteredCandidates[prevIndex];
+      if (prevCandidate) {
+        const enrichedCandidate = enrichCandidateData(prevCandidate);
+        setSelectedCandidate(enrichedCandidate);
+        setSelectedCandidateIndex(prevIndex);
+      }
+    }
+  };
+
+  const handleNextCandidate = () => {
+    if (selectedCandidateIndex < filteredCandidates.length - 1) {
+      const nextIndex = selectedCandidateIndex + 1;
+      const nextCandidate = filteredCandidates[nextIndex];
+      if (nextCandidate) {
+        const enrichedCandidate = enrichCandidateData(nextCandidate);
+        setSelectedCandidate(enrichedCandidate);
+        setSelectedCandidateIndex(nextIndex);
+      }
     }
   };
 
@@ -131,6 +165,69 @@ export default function MyCandidatePage() {
       return;
     }
     setIsTakeOutConfirmOpen(true);
+  };
+
+  // Single candidate actions from modal
+  const handleApproveSingle = (candidateId: string) => {
+    const candidate = candidates.find((c) => c.id === candidateId);
+    if (!candidate) return;
+    
+    // Close review modal and open feedback modal
+    setIsReviewModalOpen(false);
+    setPendingActionCandidates(new Set([candidateId]));
+    setTotalCandidatesToProcess(1);
+    setFeedbackModalCandidate(candidate);
+    setFeedbackModalCandidates([candidate]);
+    setFeedbackActionType("approve");
+    setIsFeedbackModalOpen(true);
+  };
+
+  const handleRejectSingle = (candidateId: string) => {
+    const candidate = candidates.find((c) => c.id === candidateId);
+    if (!candidate) return;
+    
+    // Close review modal and open feedback modal
+    setIsReviewModalOpen(false);
+    setPendingActionCandidates(new Set([candidateId]));
+    setTotalCandidatesToProcess(1);
+    setFeedbackModalCandidate(candidate);
+    setFeedbackModalCandidates([candidate]);
+    setFeedbackActionType("reject");
+    setIsFeedbackModalOpen(true);
+  };
+
+  const handleTransferSingle = (candidateId: string) => {
+    const candidate = candidates.find((c) => c.id === candidateId);
+    if (!candidate) return;
+    
+    // Close review modal and open switch job modal
+    setIsReviewModalOpen(false);
+    setSelectedCandidatesForSwitch([candidate]);
+    setIsSwitchJobModalOpen(true);
+  };
+
+  const handleTakeOutSingle = (candidateId: string) => {
+    const candidate = candidates.find((c) => c.id === candidateId);
+    if (!candidate) return;
+    
+    if (confirm(`Are you sure you want to take out ${candidate.name}?`)) {
+      // TODO: Implement actual API call
+      try {
+        setCandidates((prev) =>
+          prev.map((c) =>
+            c.id === candidateId ? { ...c, stage: "applied" as const } : c
+          )
+        );
+        // Close review modal
+        setIsReviewModalOpen(false);
+        setSelectedCandidate(null);
+        setSelectedCandidateIndex(-1);
+        alert(`${candidate.name} has been taken out successfully`);
+      } catch (error) {
+        console.error("Error taking out candidate:", error);
+        alert("Failed to take out candidate. Please try again.");
+      }
+    }
   };
 
   const handleConfirmTakeOut = async () => {
@@ -186,17 +283,20 @@ export default function MyCandidatePage() {
       alert("Please select at least one candidate to approve");
       return;
     }
-    const count = selectedCandidateIds.size;
-    // Update candidates status to qualified
-    setCandidates((prev) =>
-      prev.map((c) =>
-        selectedCandidateIds.has(c.id)
-          ? { ...c, status: "qualified" as const }
-          : c
-      )
+    
+    // For bulk approve, process first candidate and queue the rest
+    const selectedCandidates = candidates.filter((c) =>
+      selectedCandidateIds.has(c.id)
     );
-    setSelectedCandidateIds(new Set());
-    alert(`${count} candidate(s) approved successfully`);
+    
+    if (selectedCandidates.length > 0) {
+      setPendingActionCandidates(selectedCandidateIds);
+      setTotalCandidatesToProcess(selectedCandidateIds.size);
+      setFeedbackModalCandidate(selectedCandidates[0]);
+      setFeedbackModalCandidates(selectedCandidates);
+      setFeedbackActionType("approve");
+      setIsFeedbackModalOpen(true);
+    }
   };
 
   const handleBulkReject = () => {
@@ -204,33 +304,96 @@ export default function MyCandidatePage() {
       alert("Please select at least one candidate to reject");
       return;
     }
-    setIsRejectConfirmOpen(true);
+    
+    // For bulk reject, process first candidate and queue the rest
+    const selectedCandidates = candidates.filter((c) =>
+      selectedCandidateIds.has(c.id)
+    );
+    
+    if (selectedCandidates.length > 0) {
+      setPendingActionCandidates(selectedCandidateIds);
+      setTotalCandidatesToProcess(selectedCandidateIds.size);
+      setFeedbackModalCandidate(selectedCandidates[0]);
+      setFeedbackModalCandidates(selectedCandidates);
+      setFeedbackActionType("reject");
+      setIsFeedbackModalOpen(true);
+    }
   };
 
-  const handleConfirmReject = async () => {
-    setIsRejectConfirmOpen(false);
-    const count = selectedCandidateIds.size;
+
+  const handleSendCandidateFeedback = async (
+    candidateId: string,
+    templateId: string,
+    content: string,
+    subject: string,
+    attachment?: File | null
+  ) => {
+    // TODO: Implement actual API call to send feedback
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     
-    // TODO: Implement actual API call to reject candidates
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // In production, this would be:
-      // await fetch('/api/candidates/reject', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ candidateIds: Array.from(selectedCandidateIds) }),
-      // });
-      
+    // In production, this would be:
+    // const formData = new FormData();
+    // formData.append('candidateId', candidateId);
+    // formData.append('templateId', templateId);
+    // formData.append('content', content);
+    // formData.append('subject', subject);
+    // if (attachment) {
+    //   formData.append('attachment', attachment);
+    // }
+    // await fetch('/api/feedback/send', {
+    //   method: 'POST',
+    //   body: formData,
+    // });
+    
+    console.log("Sending feedback:", { candidateId, templateId, content, subject, attachment: attachment?.name });
+    
+    // After sending feedback, perform the action (approve or reject)
+    const newPendingCandidates = new Set(pendingActionCandidates);
+    newPendingCandidates.delete(candidateId);
+    
+    if (feedbackActionType === "approve") {
+      // Update candidate status to qualified
       setCandidates((prev) =>
-        prev.filter((c) => !selectedCandidateIds.has(c.id))
+        prev.map((c) =>
+          c.id === candidateId ? { ...c, status: "qualified" as const } : c
+        )
       );
-      setRejectedCount(count);
-      setSelectedCandidateIds(new Set());
-      setIsRejectSuccessOpen(true);
-    } catch (error) {
-      console.error("Error rejecting candidates:", error);
-      alert("Failed to reject candidates. Please try again.");
+    } else {
+      // Remove candidate (reject)
+      setCandidates((prev) =>
+        prev.filter((c) => c.id !== candidateId)
+      );
     }
+    
+    // If there are more candidates to process, show next one
+    if (newPendingCandidates.size > 0) {
+      const remainingCandidates = candidates.filter((c) =>
+        newPendingCandidates.has(c.id)
+      );
+      if (remainingCandidates.length > 0) {
+        setFeedbackModalCandidate(remainingCandidates[0]);
+        setFeedbackModalCandidates(remainingCandidates);
+        setPendingActionCandidates(newPendingCandidates);
+        return; // Don't close modal, continue with next candidate
+      }
+    }
+    
+    // All candidates processed, close modal and reset
+    setIsFeedbackModalOpen(false);
+    setFeedbackModalCandidate(null);
+    setFeedbackModalCandidates([]);
+    setPendingActionCandidates(new Set());
+    setSelectedCandidateIds(new Set());
+    
+    // Show success message
+    const totalProcessed = totalCandidatesToProcess;
+    if (feedbackActionType === "approve") {
+      alert(`${totalProcessed} candidate(s) approved successfully`);
+    } else {
+      setRejectedCount(totalProcessed);
+      setIsRejectSuccessOpen(true);
+    }
+    setTotalCandidatesToProcess(0);
   };
 
   const handleSendFeedback = () => {
@@ -365,7 +528,6 @@ export default function MyCandidatePage() {
     { value: "all", label: "All Stages" },
     { value: "applied", label: "Applied" },
     { value: "cv_review", label: "CV Review" },
-    { value: "ready_for_interview", label: "Ready for Interview" },
   ];
 
   return (
@@ -421,7 +583,7 @@ export default function MyCandidatePage() {
               onClick={handleSwitchJob}
               disabled={selectedCandidateIds.size === 0}
             >
-              Switch Job
+              Transfer
             </Button>
             <Button
               variant="primary"
@@ -442,6 +604,9 @@ export default function MyCandidatePage() {
             onChatWhatsApp={handleChatWhatsApp}
             onSelectCandidate={handleSelectCandidate}
             onSelectAll={handleSelectAll}
+            hideWhatsApp={true}
+            useLocationType={true}
+            hideNotSpecified={true}
           />
           {totalPages > 1 && (
             <Pagination
@@ -458,9 +623,20 @@ export default function MyCandidatePage() {
         onClose={() => {
           setIsReviewModalOpen(false);
           setSelectedCandidate(null);
+          setSelectedCandidateIndex(-1);
         }}
         candidate={selectedCandidate}
         onStageChange={handleStageChange}
+        showStageRadio={true}
+        onPrevious={handlePreviousCandidate}
+        onNext={handleNextCandidate}
+        hasPrevious={selectedCandidateIndex > 0}
+        hasNext={selectedCandidateIndex >= 0 && selectedCandidateIndex < filteredCandidates.length - 1}
+        showInReviewButtons={true}
+        onApprove={selectedCandidate ? () => handleApproveSingle(selectedCandidate.id) : undefined}
+        onRejectInReview={selectedCandidate ? () => handleRejectSingle(selectedCandidate.id) : undefined}
+        onTransfer={selectedCandidate ? () => handleTransferSingle(selectedCandidate.id) : undefined}
+        onTakeOut={selectedCandidate ? () => handleTakeOutSingle(selectedCandidate.id) : undefined}
       />
 
       <SwitchJobModal
@@ -471,6 +647,22 @@ export default function MyCandidatePage() {
         }}
         candidates={selectedCandidatesForSwitch}
         onConfirm={handleConfirmSwitchJob}
+      />
+
+      <CandidateFeedbackModal
+        isOpen={isFeedbackModalOpen}
+        onClose={() => {
+          setIsFeedbackModalOpen(false);
+          setFeedbackModalCandidate(null);
+          setFeedbackModalCandidates([]);
+          setPendingActionCandidates(new Set());
+          setTotalCandidatesToProcess(0);
+        }}
+        candidate={feedbackModalCandidate}
+        candidates={feedbackModalCandidates}
+        templates={dummyTemplates}
+        actionType={feedbackActionType}
+        onSend={handleSendCandidateFeedback}
       />
 
       <SendFeedbackModal
@@ -579,34 +771,6 @@ export default function MyCandidatePage() {
         </div>
       </Modal>
 
-      {/* Reject Confirmation Modal */}
-      <Modal
-        isOpen={isRejectConfirmOpen}
-        onClose={() => setIsRejectConfirmOpen(false)}
-        title="Konfirmasi Reject"
-        size="md"
-      >
-        <div className="space-y-4">
-          <p className="text-gray-600">
-            Apakah Anda yakin ingin menolak <strong>{selectedCandidateIds.size}</strong> kandidat yang dipilih?
-          </p>
-          <p className="text-sm text-red-600 font-medium">
-            Tindakan ini tidak dapat dibatalkan. Kandidat akan dipindahkan ke halaman Rejected.
-          </p>
-          <div className="flex justify-end gap-3 pt-4">
-            <Button
-              variant="outline"
-              onClick={() => setIsRejectConfirmOpen(false)}
-            >
-              Batal
-            </Button>
-            <Button variant="danger" onClick={handleConfirmReject}>
-              Reject
-            </Button>
-          </div>
-        </div>
-      </Modal>
-
       {/* Reject Success Modal */}
       <Modal
         isOpen={isRejectSuccessOpen}
@@ -649,7 +813,7 @@ export default function MyCandidatePage() {
             Apakah Anda yakin ingin mengambil <strong>{selectedCandidateIds.size}</strong> kandidat yang dipilih?
           </p>
           <p className="text-sm text-gray-500">
-            Kandidat yang diambil akan dikembalikan dari archive ke halaman My Candidate.
+            Data kandidat akan dipindahkan dari halaman In Review ke halaman New Candidates.
           </p>
           <div className="flex justify-end gap-3 pt-4">
             <Button

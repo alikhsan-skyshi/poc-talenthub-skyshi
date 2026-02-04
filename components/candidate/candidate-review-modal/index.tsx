@@ -27,10 +27,19 @@ interface CandidateReviewModalProps {
   onPick?: () => void;
   onReject?: () => void;
   showStatusLabel?: boolean; // If true, show Status label instead of Stage dropdown
+  showStageRadio?: boolean; // If true, show Stage as radio buttons instead of dropdown
   onPrevious?: () => void; // Navigate to previous candidate
   onNext?: () => void; // Navigate to next candidate
   hasPrevious?: boolean; // Whether there is a previous candidate
   hasNext?: boolean; // Whether there is a next candidate
+  showInReviewButtons?: boolean; // If true, show Approve, Reject, Transfer, Take Out buttons
+  onApprove?: () => void;
+  onRejectInReview?: () => void;
+  onTransfer?: () => void;
+  onTakeOut?: () => void;
+  hideStageSelector?: boolean; // If true, hide Stage/Status selector completely
+  showApprovedButtons?: boolean; // If true, show Transfer and WhatsApp buttons
+  onTransferApproved?: () => void;
 }
 
 export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
@@ -42,10 +51,19 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
   onPick,
   onReject,
   showStatusLabel = false,
+  showStageRadio = false,
   onPrevious,
   onNext,
   hasPrevious = false,
   hasNext = false,
+  showInReviewButtons = false,
+  onApprove,
+  onRejectInReview,
+  onTransfer,
+  onTakeOut,
+  hideStageSelector = false,
+  showApprovedButtons = false,
+  onTransferApproved,
 }) => {
   const [activeTab, setActiveTab] = useState("profile");
   const [notes, setNotes] = useState("");
@@ -124,6 +142,11 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
     { value: "ready_for_interview", label: "Ready for Interview" },
   ];
 
+  // Filter stage options for radio button (only Applied and CV Review)
+  const stageRadioOptions = stageOptions.filter(
+    (option) => option.value === "applied" || option.value === "cv_review"
+  );
+
   if (!isOpen) return null;
 
   return (
@@ -180,6 +203,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
               <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
               {/* Stage Selector / Status Label */}
+              {!hideStageSelector && (
               <div className="flex items-center justify-between pt-2 pb-4 border-b border-gray-200">
                 <div className="flex items-center gap-3">
                   {showStatusLabel ? (
@@ -196,6 +220,34 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                       >
                         {candidate.status === "qualified" ? "Qualified" : "Not Qualified"}
                       </span>
+                    </>
+                  ) : showStageRadio ? (
+                    <>
+                      <label className="text-sm font-medium text-gray-700">
+                        Stage:
+                      </label>
+                      <div className="flex items-center gap-4">
+                        {stageRadioOptions.map((option) => (
+                          <label
+                            key={option.value}
+                            className="flex items-center gap-2 cursor-pointer"
+                          >
+                            <input
+                              type="radio"
+                              name="stage"
+                              value={option.value}
+                              checked={currentStage === option.value}
+                              onChange={(e) =>
+                                handleStageChange(e.target.value as CandidateStage)
+                              }
+                              className="w-4 h-4 text-primary focus:ring-primary border-gray-300"
+                            />
+                            <span className="text-sm text-gray-700">
+                              {option.label}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
                     </>
                   ) : (
                     <>
@@ -214,8 +266,9 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   )}
                 </div>
               </div>
+              )}
 
-              <div className="mt-4">
+              <div className={hideStageSelector ? "mt-0" : "mt-4"}>
                 {activeTab === "profile" && (
                   <div className="space-y-6">
                     {/* Personal Information Section */}
@@ -547,7 +600,67 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
           
           {/* Footer with Action Buttons */}
           <div className="flex justify-end items-center gap-3 p-6 border-t border-gray-200 flex-shrink-0">
-            {showPickReject ? (
+            {showApprovedButtons ? (
+              <>
+                <Button
+                  variant="primary"
+                  onClick={onTransferApproved}
+                  className="flex items-center gap-2"
+                >
+                  Transfer
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleChatWhatsApp}
+                  disabled={!candidate.phoneNumber}
+                  className="flex items-center gap-2"
+                >
+                  <ChatBubbleIcon className="w-4 h-4" />
+                  WhatsApp
+                </Button>
+              </>
+            ) : showInReviewButtons ? (
+              <>
+                <Button
+                  variant="primary"
+                  onClick={onApprove}
+                  className="flex items-center gap-2"
+                >
+                  Approve
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={onRejectInReview}
+                  className="flex items-center gap-2"
+                >
+                  Reject
+                </Button>
+                <span className="text-gray-300 self-center">|</span>
+                <Button
+                  variant="primary"
+                  onClick={onTransfer}
+                  className="flex items-center gap-2"
+                >
+                  Transfer
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={onTakeOut}
+                  className="flex items-center gap-2"
+                >
+                  Take Out
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleChatWhatsApp}
+                  disabled={!candidate.phoneNumber}
+                  className="flex items-center gap-2"
+                >
+                  <ChatBubbleIcon className="w-4 h-4" />
+                  WhatsApp
+                </Button>
+              </>
+            ) : showPickReject ? (
               <>
                 <Button
                   variant="primary"

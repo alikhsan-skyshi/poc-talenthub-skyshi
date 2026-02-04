@@ -277,7 +277,7 @@ export default function ListOfCandidatesPage() {
               onClick={handleSwitchJob}
               disabled={selectedCandidateIds.size === 0}
             >
-              Switch Job
+              Transfer
             </Button>
             <Button
               variant="danger"

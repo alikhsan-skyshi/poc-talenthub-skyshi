@@ -14,7 +14,6 @@ import { enrichCandidateData } from "@/lib/data/candidate-details";
 import type {
   Candidate,
   CandidateStage,
-  ReadyFor,
 } from "@/types/candidate";
 import type { ApplicationForm } from "@/types/application-form";
 
@@ -32,7 +31,7 @@ export default function RejectedPage() {
   const [selectedCandidatesForSwitch, setSelectedCandidatesForSwitch] =
     useState<Candidate[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [readyForFilter, setReadyForFilter] = useState<ReadyFor | "all">("all");
+  const [stageFilter, setStageFilter] = useState<CandidateStage | "all">("all");
   const [selectedCandidateIds, setSelectedCandidateIds] = useState<Set<string>>(
     new Set()
   );
@@ -41,9 +40,9 @@ export default function RejectedPage() {
   const filteredCandidates = useMemo(() => {
     let filtered = candidates;
 
-    // Filter by ready for
-    if (readyForFilter !== "all") {
-      filtered = filtered.filter((c) => c.readyFor === readyForFilter);
+    // Filter by stage
+    if (stageFilter !== "all") {
+      filtered = filtered.filter((c) => c.stage === stageFilter);
     }
 
     // Search by name, role, or form
@@ -58,12 +57,12 @@ export default function RejectedPage() {
     }
 
     return filtered;
-  }, [candidates, searchQuery, readyForFilter]);
+  }, [candidates, searchQuery, stageFilter]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, readyForFilter]);
+  }, [searchQuery, stageFilter]);
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredCandidates.length / ITEMS_PER_PAGE);
@@ -193,12 +192,10 @@ export default function RejectedPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const readyForOptions = [
-    { value: "all", label: "All Ready For" },
-    { value: "onsite", label: "Onsite" },
-    { value: "hybrid", label: "Hybrid" },
-    { value: "remote", label: "Remote" },
-    { value: "flexible", label: "Flexible" },
+  const stageOptions = [
+    { value: "all", label: "All Stages" },
+    { value: "applied", label: "Applied" },
+    { value: "cv_review", label: "CV Review" },
   ];
 
   return (
@@ -221,10 +218,10 @@ export default function RejectedPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             <Select
-              options={readyForOptions}
-              value={readyForFilter}
+              options={stageOptions}
+              value={stageFilter}
               onChange={(e) =>
-                setReadyForFilter(e.target.value as ReadyFor | "all")
+                setStageFilter(e.target.value as CandidateStage | "all")
               }
             />
           </div>
@@ -237,7 +234,7 @@ export default function RejectedPage() {
               onClick={handleSwitchJob}
               disabled={selectedCandidateIds.size === 0}
             >
-              Switch Job
+              Transfer
             </Button>
             <Button
               variant="danger"
@@ -258,7 +255,9 @@ export default function RejectedPage() {
             onChatWhatsApp={handleChatWhatsApp}
             onSelectCandidate={handleSelectCandidate}
             onSelectAll={handleSelectAll}
-            showStatus={true}
+            useLocationType={true}
+            hideNotSpecified={true}
+            hideWhatsApp={true}
           />
           {totalPages > 1 && (
             <Pagination

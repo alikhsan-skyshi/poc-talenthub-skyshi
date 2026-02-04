@@ -17,6 +17,8 @@ interface CandidateTableProps {
   onRowClick?: (candidateId: string) => void; // Handler for row click
   useLocationType?: boolean; // If true, show "Location" and "Type" instead of "Experience" and "Ready For"
   hideNotSpecified?: boolean; // If true, hide "Not specified" values
+  hideWhatsApp?: boolean; // If true, hide WhatsApp icon in Actions column
+  hideStage?: boolean; // If true, hide "Stage" or "Status" column
 }
 
 export const CandidateTable: React.FC<CandidateTableProps> = ({
@@ -31,6 +33,8 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
   onRowClick,
   useLocationType = false,
   hideNotSpecified = false,
+  hideWhatsApp = false,
+  hideStage = false,
 }) => {
   const allSelected =
     candidates.length > 0 &&
@@ -197,12 +201,14 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
             >
               {useLocationType ? "Type" : "Ready For"}
             </th>
-            <th
-              scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              {showStatus ? "Status" : "Stage"}
-            </th>
+            {!hideStage && (
+              <th
+                scope="col"
+                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                {showStatus ? "Status" : "Stage"}
+              </th>
+            )}
             {!hideActions && (
               <th
                 scope="col"
@@ -218,7 +224,10 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
             <tr>
               <td
                 colSpan={
-                  (onSelectAll ? 1 : 0) + (hideActions ? 7 : 8)
+                  6 + // Applied At, Job Post, Name, Role, Location/Experience, Type/Ready For
+                  (onSelectAll ? 1 : 0) + 
+                  (hideStage ? 0 : 1) + 
+                  (hideActions ? 0 : 1)
                 }
                 className="px-6 py-4 text-center text-gray-500"
               >
@@ -284,11 +293,13 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
                         : getReadyForLabel(candidate.readyFor)}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    {showStatus
-                      ? getStatusBadge(candidate.status)
-                      : getStageBadge(candidate.stage)}
-                  </td>
+                  {!hideStage && (
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      {showStatus
+                        ? getStatusBadge(candidate.status)
+                        : getStageBadge(candidate.stage)}
+                    </td>
+                  )}
                   {!hideActions && (
                     <td 
                       className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium"
@@ -302,13 +313,15 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
                           onClick={() => onReviewCV(candidate.id)}
                           tooltip="Review CV"
                         />
-                        <IconButton
-                          icon={<ChatBubbleIcon />}
-                          variant="primary"
-                          size="sm"
-                          onClick={() => onChatWhatsApp(candidate)}
-                          tooltip="Chat WhatsApp"
-                        />
+                        {!hideWhatsApp && (
+                          <IconButton
+                            icon={<ChatBubbleIcon />}
+                            variant="primary"
+                            size="sm"
+                            onClick={() => onChatWhatsApp(candidate)}
+                            tooltip="Chat WhatsApp"
+                          />
+                        )}
                       </div>
                     </td>
                   )}

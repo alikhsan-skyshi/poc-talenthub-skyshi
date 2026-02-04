@@ -94,7 +94,7 @@ export const SwitchJobModal: React.FC<SwitchJobModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Switch Job"
+      title="Transfer"
       size="md"
     >
       <div className="space-y-4">
@@ -191,7 +191,7 @@ export const SwitchJobModal: React.FC<SwitchJobModalProps> = ({
             onClick={handleConfirm}
             disabled={!selectedJobId || isLoading || jobOptions.length === 0}
           >
-            {isLoading ? "Switching..." : "Switch Job"}
+            {isLoading ? "Transferring..." : "Transfer"}
           </Button>
         </div>
       </div>
