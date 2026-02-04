@@ -13,6 +13,10 @@ interface CandidateTableProps {
   onSelectCandidate?: (candidateId: string, isSelected: boolean) => void;
   onSelectAll?: (isSelected: boolean) => void;
   showStatus?: boolean; // If true, show "Status" column instead of "Stage"
+  hideActions?: boolean; // If true, hide "Actions" column
+  onRowClick?: (candidateId: string) => void; // Handler for row click
+  useLocationType?: boolean; // If true, show "Location" and "Type" instead of "Experience" and "Ready For"
+  hideNotSpecified?: boolean; // If true, hide "Not specified" values
 }
 
 export const CandidateTable: React.FC<CandidateTableProps> = ({
@@ -23,6 +27,10 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
   onSelectCandidate,
   onSelectAll,
   showStatus = false,
+  hideActions = false,
+  onRowClick,
+  useLocationType = false,
+  hideNotSpecified = false,
 }) => {
   const allSelected =
     candidates.length > 0 &&
@@ -43,6 +51,35 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
       flexible: "Flexible",
     };
     return readyFor ? readyForMap[readyFor] || readyFor : "Not specified";
+  };
+
+  const getLocationLabel = (readyFor?: string) => {
+    const locationMap: Record<string, string> = {
+      onsite: "Onsite",
+      hybrid: "Hybrid",
+      remote: "Remote",
+      flexible: "Flexible",
+    };
+    if (!readyFor) {
+      return hideNotSpecified ? "" : "Not specified";
+    }
+    return locationMap[readyFor] || readyFor;
+  };
+
+  const getTypeLabel = (type?: string) => {
+    const typeMap: Record<string, string> = {
+      full_time: "Full Time",
+      part_time: "Part Time",
+      freelance: "Freelance",
+    };
+    if (!type) {
+      if (hideNotSpecified) {
+        // Default to "Full Time" if hideNotSpecified is true and no type
+        return "Full Time";
+      }
+      return "Not specified";
+    }
+    return typeMap[type] || type;
   };
 
   const getStageBadge = (stage: CandidateStage) => {
@@ -134,7 +171,7 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Form
+              Job Post
             </th>
             <th
               scope="col"
@@ -152,13 +189,13 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
               scope="col"
               className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Experience
+              {useLocationType ? "Location" : "Experience"}
             </th>
             <th
               scope="col"
               className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
-              Ready For
+              {useLocationType ? "Type" : "Ready For"}
             </th>
             <th
               scope="col"
@@ -166,19 +203,23 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
             >
               {showStatus ? "Status" : "Stage"}
             </th>
-            <th
-              scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Actions
-            </th>
+            {!hideActions && (
+              <th
+                scope="col"
+                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Actions
+              </th>
+            )}
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {candidates.length === 0 ? (
             <tr>
               <td
-                colSpan={onSelectAll ? 8 : 7}
+                colSpan={
+                  (onSelectAll ? 1 : 0) + (hideActions ? 7 : 8)
+                }
                 className="px-6 py-4 text-center text-gray-500"
               >
                 No candidates found
@@ -190,7 +231,14 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
               return (
                 <tr
                   key={candidate.id}
-                  className={`hover:bg-light ${isSelected ? "bg-primary-50" : ""}`}
+                  className={`hover:bg-light ${isSelected ? "bg-primary-50" : ""} ${
+                    onRowClick ? "cursor-pointer" : ""
+                  }`}
+                  onClick={() => {
+                    if (onRowClick) {
+                      onRowClick(candidate.id);
+                    }
+                  }}
                 >
                   {onSelectCandidate && (
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -211,7 +259,7 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">
-                      {candidate.formTitle || "Not specified"}
+                      {candidate.formTitle || (hideNotSpecified ? "" : "Not specified")}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -224,12 +272,16 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <div className="text-sm text-gray-900">
-                      {candidate.experience}
+                      {useLocationType
+                        ? getLocationLabel(candidate.readyFor)
+                        : candidate.experience}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <div className="text-sm text-gray-900">
-                      {getReadyForLabel(candidate.readyFor)}
+                      {useLocationType
+                        ? getTypeLabel(candidate.type)
+                        : getReadyForLabel(candidate.readyFor)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -237,24 +289,29 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
                       ? getStatusBadge(candidate.status)
                       : getStageBadge(candidate.stage)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                    <div className="flex items-center justify-center gap-2">
-                      <IconButton
-                        icon={<DocumentIcon />}
-                        variant="info"
-                        size="sm"
-                        onClick={() => onReviewCV(candidate.id)}
-                        tooltip="Review CV"
-                      />
-                      <IconButton
-                        icon={<ChatBubbleIcon />}
-                        variant="primary"
-                        size="sm"
-                        onClick={() => onChatWhatsApp(candidate)}
-                        tooltip="Chat WhatsApp"
-                      />
-                    </div>
-                  </td>
+                  {!hideActions && (
+                    <td 
+                      className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <IconButton
+                          icon={<DocumentIcon />}
+                          variant="info"
+                          size="sm"
+                          onClick={() => onReviewCV(candidate.id)}
+                          tooltip="Review CV"
+                        />
+                        <IconButton
+                          icon={<ChatBubbleIcon />}
+                          variant="primary"
+                          size="sm"
+                          onClick={() => onChatWhatsApp(candidate)}
+                          tooltip="Chat WhatsApp"
+                        />
+                      </div>
+                    </td>
+                  )}
                 </tr>
               );
             })

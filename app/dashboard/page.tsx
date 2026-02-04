@@ -1,269 +1,197 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { useAuth } from "@/hooks/use-auth";
-import { CandidateTable } from "@/components/candidate/candidate-table";
-import { CandidateReviewModal } from "@/components/candidate/candidate-review-modal";
-import { Pagination } from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { dummyCandidates } from "@/lib/data/dummy-candidates";
-import { enrichCandidateData } from "@/lib/data/candidate-details";
-import type {
-  Candidate,
-  CandidateStage,
-  ReadyFor,
-  CandidateStatus,
-} from "@/types/candidate";
-
-const ITEMS_PER_PAGE = 10;
+import { dummyForms } from "@/lib/data/dummy-forms";
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [candidates, setCandidates] = useState<Candidate[]>(dummyCandidates);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCandidate, setSelectedCandidate] =
-    useState<Candidate | null>(null);
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [readyForFilter, setReadyForFilter] = useState<ReadyFor | "all">("all");
-  const [statusFilter, setStatusFilter] = useState<CandidateStatus | "all">(
-    "all"
-  );
-  const [selectedCandidateIds, setSelectedCandidateIds] = useState<Set<string>>(
-    new Set()
-  );
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
-  // Filter and search candidates
-  const filteredCandidates = useMemo(() => {
-    let filtered = candidates;
+  // Calculate achievements based on date range
+  const achievements = useMemo(() => {
+    const start = startDate ? new Date(startDate) : null;
+    const end = endDate ? new Date(endDate) : null;
 
-    // Filter by ready for
-    if (readyForFilter !== "all") {
-      filtered = filtered.filter((c) => c.readyFor === readyForFilter);
+    // Filter forms by date range
+    let filteredForms = dummyForms;
+    if (start) {
+      filteredForms = filteredForms.filter(
+        (form) => form.createdAt >= start
+      );
     }
-
-    // Filter by status
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((c) => c.status === statusFilter);
-    }
-
-    // Search by name, role, or form
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (c) =>
-          c.name.toLowerCase().includes(query) ||
-          c.role.toLowerCase().includes(query) ||
-          (c.formTitle && c.formTitle.toLowerCase().includes(query))
+    if (end) {
+      const endDateWithTime = new Date(end);
+      endDateWithTime.setHours(23, 59, 59, 999);
+      filteredForms = filteredForms.filter(
+        (form) => form.createdAt <= endDateWithTime
       );
     }
 
-    return filtered;
-  }, [candidates, searchQuery, readyForFilter, statusFilter]);
-
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, readyForFilter, statusFilter]);
-
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredCandidates.length / ITEMS_PER_PAGE);
-  const paginatedCandidates = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return filteredCandidates.slice(startIndex, endIndex);
-  }, [filteredCandidates, currentPage]);
-
-  const handleReviewCV = (candidateId: string) => {
-    const candidate = candidates.find((c) => c.id === candidateId);
-    if (candidate) {
-      const enrichedCandidate = enrichCandidateData(candidate);
-      setSelectedCandidate(enrichedCandidate);
-      setIsReviewModalOpen(true);
-    }
-  };
-
-  const handleStageChange = (candidateId: string, newStage: CandidateStage) => {
-    setCandidates((prev) =>
-      prev.map((c) => (c.id === candidateId ? { ...c, stage: newStage } : c))
-    );
-    // Update selected candidate if it's the one being changed
-    if (selectedCandidate && selectedCandidate.id === candidateId) {
-      setSelectedCandidate({ ...selectedCandidate, stage: newStage });
-    }
-  };
-
-  const handleChatWhatsApp = (candidate: Candidate) => {
-    // Open WhatsApp chat
-    if (candidate.phoneNumber) {
-      const phoneNumber = candidate.phoneNumber.replace(/[^0-9]/g, "");
-      const message = encodeURIComponent(
-        `Hello ${candidate.name}, I'm contacting you regarding your application for ${candidate.role}.`
+    // Filter candidates by date range
+    let filteredCandidates = dummyCandidates;
+    if (start) {
+      filteredCandidates = filteredCandidates.filter(
+        (candidate) => candidate.appliedAt >= start
       );
-      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
-      window.open(whatsappUrl, "_blank");
-    } else {
-      alert(`Phone number not available for ${candidate.name}`);
     }
-  };
-
-  const handlePick = () => {
-    if (selectedCandidateIds.size === 0) {
-      alert("Please select at least one candidate to pick");
-      return;
-    }
-    // TODO: Implement pick functionality
-    alert(
-      `Pick ${selectedCandidateIds.size} candidate(s) - Feature coming soon`
-    );
-  };
-
-  const handleDelete = () => {
-    if (selectedCandidateIds.size === 0) {
-      alert("Please select at least one candidate to delete");
-      return;
-    }
-
-    if (
-      confirm(
-        `Are you sure you want to delete ${selectedCandidateIds.size} candidate(s)?`
-      )
-    ) {
-      setCandidates((prev) =>
-        prev.filter((c) => !selectedCandidateIds.has(c.id))
+    if (end) {
+      const endDateWithTime = new Date(end);
+      endDateWithTime.setHours(23, 59, 59, 999);
+      filteredCandidates = filteredCandidates.filter(
+        (candidate) => candidate.appliedAt <= endDateWithTime
       );
-      setSelectedCandidateIds(new Set());
     }
-  };
 
-  const handleSelectCandidate = (candidateId: string, isSelected: boolean) => {
-    setSelectedCandidateIds((prev) => {
-      const newSet = new Set(prev);
-      if (isSelected) {
-        newSet.add(candidateId);
-      } else {
-        newSet.delete(candidateId);
-      }
-      return newSet;
-    });
-  };
+    // Calculate statistics
+    const jobPosting = filteredForms.length;
+    const inReview = filteredCandidates.filter(
+      (c) => c.stage === "cv_review"
+    ).length;
+    const approved = filteredCandidates.filter(
+      (c) => c.status === "qualified"
+    ).length;
+    const rejected = filteredCandidates.filter(
+      (c) => c.status === "not_qualified"
+    ).length;
+    const totalCandidatesApplication = inReview + approved + rejected;
 
-  const handleSelectAll = (isSelected: boolean) => {
-    if (isSelected) {
-      setSelectedCandidateIds(new Set(paginatedCandidates.map((c) => c.id)));
-    } else {
-      setSelectedCandidateIds(new Set());
+    return {
+      jobPosting,
+      inReview,
+      approved,
+      rejected,
+      totalCandidatesApplication,
+    };
+  }, [startDate, endDate]);
+
+  // Get user initial for avatar
+  const getUserInitial = () => {
+    if (user?.name) {
+      return user.name.charAt(0).toUpperCase();
     }
+    if (user?.username) {
+      return user.username.charAt(0).toUpperCase();
+    }
+    return "U";
   };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    // Scroll to top when page changes
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const readyForOptions = [
-    { value: "all", label: "All Ready For" },
-    { value: "onsite", label: "Onsite" },
-    { value: "hybrid", label: "Hybrid" },
-    { value: "remote", label: "Remote" },
-    { value: "flexible", label: "Flexible" },
-  ];
-
-  const statusOptions = [
-    { value: "all", label: "All Status" },
-    { value: "qualified", label: "Qualified" },
-    { value: "not_qualified", label: "Not Qualified" },
-  ];
 
   return (
     <DashboardLayout>
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">New Candidates</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-sm text-gray-600 mt-1">
             Welcome back, {user?.name || user?.username}!
           </p>
         </div>
 
-        {/* Search and Filter Section */}
-        <div className="bg-white shadow-sm rounded-xl p-4 mb-4 border border-gray-100">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <Input
-              type="text"
-              placeholder="Search by name, role, or form..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <Select
-              options={readyForOptions}
-              value={readyForFilter}
-              onChange={(e) =>
-                setReadyForFilter(e.target.value as ReadyFor | "all")
-              }
-            />
-            <Select
-              options={statusOptions}
-              value={statusFilter}
-              onChange={(e) =>
-                setStatusFilter(e.target.value as CandidateStatus | "all")
-              }
-            />
+        <div className="space-y-6">
+          {/* Achievement Section */}
+          <div className="bg-white shadow-sm rounded-xl p-6 border border-gray-100">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Achievement
+            </h2>
+
+            {/* Date Range Filter */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <Input
+                type="date"
+                label="Start Date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+              <Input
+                type="date"
+                label="End Date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+
+            {/* Statistics Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Job Posting
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {achievements.jobPosting}
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  In Review
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {achievements.inReview}
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Approved
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {achievements.approved}
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Rejected
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {achievements.rejected}
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Total Candidates Application
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {achievements.totalCandidatesApplication}
+                </p>
+              </div>
+            </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handlePick}
-              disabled={selectedCandidateIds.size === 0}
-            >
-              Pick
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={handleDelete}
-              disabled={selectedCandidateIds.size === 0}
-            >
-              Delete
-            </Button>
-          </div>
-        </div>
+          {/* Profile Section */}
+          <div className="bg-white shadow-sm rounded-xl p-6 border border-gray-100">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Profile
+            </h2>
+            <div className="flex items-start gap-6">
+              {/* Profile Photo */}
+              <div className="flex-shrink-0">
+                <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center text-white text-3xl font-semibold">
+                  {getUserInitial()}
+                </div>
+              </div>
 
-        <div className="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-100">
-          <CandidateTable
-            candidates={paginatedCandidates}
-            selectedCandidateIds={selectedCandidateIds}
-            onReviewCV={handleReviewCV}
-            onChatWhatsApp={handleChatWhatsApp}
-            onSelectCandidate={handleSelectCandidate}
-            onSelectAll={handleSelectAll}
-            showStatus={true}
-          />
-          {totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
-          )}
+              {/* Profile Details */}
+              <div className="flex-1">
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Name</p>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {user?.name || user?.username || "Not set"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Email</p>
+                    <p className="text-lg font-semibold text-gray-900">
+                      {user?.email || "Not set"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-
-      <CandidateReviewModal
-        isOpen={isReviewModalOpen}
-        onClose={() => {
-          setIsReviewModalOpen(false);
-          setSelectedCandidate(null);
-        }}
-        candidate={selectedCandidate}
-        onStageChange={handleStageChange}
-      />
     </DashboardLayout>
   );
 }

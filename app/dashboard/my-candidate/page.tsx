@@ -5,6 +5,7 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { CandidateTable } from "@/components/candidate/candidate-table";
 import { CandidateReviewModal } from "@/components/candidate/candidate-review-modal";
 import { SendFeedbackModal } from "@/components/candidate/send-feedback-modal";
+import { SwitchJobModal } from "@/components/candidate/switch-job-modal";
 import { Modal } from "@/components/ui/modal";
 import { Pagination } from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import { dummyCandidates } from "@/lib/data/dummy-candidates";
 import { dummyTemplates } from "@/lib/data/dummy-templates";
 import { enrichCandidateData } from "@/lib/data/candidate-details";
 import type { Candidate, CandidateStage } from "@/types/candidate";
+import type { ApplicationForm } from "@/types/application-form";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -30,12 +32,15 @@ export default function MyCandidatePage() {
   const [sentCandidatesCount, setSentCandidatesCount] = useState(0);
   const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false);
   const [isArchiveSuccessOpen, setIsArchiveSuccessOpen] = useState(false);
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false);
+  const [isRejectConfirmOpen, setIsRejectConfirmOpen] = useState(false);
+  const [isRejectSuccessOpen, setIsRejectSuccessOpen] = useState(false);
   const [isTakeOutConfirmOpen, setIsTakeOutConfirmOpen] = useState(false);
   const [isTakeOutSuccessOpen, setIsTakeOutSuccessOpen] = useState(false);
+  const [isSwitchJobModalOpen, setIsSwitchJobModalOpen] = useState(false);
+  const [selectedCandidatesForSwitch, setSelectedCandidatesForSwitch] =
+    useState<Candidate[]>([]);
   const [archivedCount, setArchivedCount] = useState(0);
-  const [deletedCount, setDeletedCount] = useState(0);
+  const [rejectedCount, setRejectedCount] = useState(0);
   const [takenOutCount, setTakenOutCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [stageFilter, setStageFilter] = useState<CandidateStage | "all">("all");
@@ -176,37 +181,55 @@ export default function MyCandidatePage() {
     }
   };
 
-  const handleBulkDelete = () => {
+  const handleApprove = () => {
     if (selectedCandidateIds.size === 0) {
-      alert("Please select at least one candidate to delete");
+      alert("Please select at least one candidate to approve");
       return;
     }
-    setIsDeleteConfirmOpen(true);
+    const count = selectedCandidateIds.size;
+    // Update candidates status to qualified
+    setCandidates((prev) =>
+      prev.map((c) =>
+        selectedCandidateIds.has(c.id)
+          ? { ...c, status: "qualified" as const }
+          : c
+      )
+    );
+    setSelectedCandidateIds(new Set());
+    alert(`${count} candidate(s) approved successfully`);
   };
 
-  const handleConfirmDelete = async () => {
-    setIsDeleteConfirmOpen(false);
+  const handleBulkReject = () => {
+    if (selectedCandidateIds.size === 0) {
+      alert("Please select at least one candidate to reject");
+      return;
+    }
+    setIsRejectConfirmOpen(true);
+  };
+
+  const handleConfirmReject = async () => {
+    setIsRejectConfirmOpen(false);
     const count = selectedCandidateIds.size;
     
-    // TODO: Implement actual API call to delete candidates
+    // TODO: Implement actual API call to reject candidates
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
       // In production, this would be:
-      // await fetch('/api/candidates/delete', {
-      //   method: 'DELETE',
+      // await fetch('/api/candidates/reject', {
+      //   method: 'POST',
       //   body: JSON.stringify({ candidateIds: Array.from(selectedCandidateIds) }),
       // });
       
       setCandidates((prev) =>
         prev.filter((c) => !selectedCandidateIds.has(c.id))
       );
-      setDeletedCount(count);
+      setRejectedCount(count);
       setSelectedCandidateIds(new Set());
-      setIsDeleteSuccessOpen(true);
+      setIsRejectSuccessOpen(true);
     } catch (error) {
-      console.error("Error deleting candidates:", error);
-      alert("Failed to delete candidates. Please try again.");
+      console.error("Error rejecting candidates:", error);
+      alert("Failed to reject candidates. Please try again.");
     }
   };
 
@@ -282,6 +305,56 @@ export default function MyCandidatePage() {
     }
   };
 
+  const handleSwitchJob = () => {
+    if (selectedCandidateIds.size === 0) {
+      alert("Please select at least one candidate to switch job");
+      return;
+    }
+
+    // Get all selected candidates
+    const selectedCandidates = candidates.filter((c) =>
+      selectedCandidateIds.has(c.id)
+    );
+
+    if (selectedCandidates.length > 0) {
+      setSelectedCandidatesForSwitch(selectedCandidates);
+      setIsSwitchJobModalOpen(true);
+    }
+  };
+
+  const handleConfirmSwitchJob = (targetJobOpening: ApplicationForm) => {
+    if (selectedCandidatesForSwitch.length === 0) return;
+
+    const candidateIdsToUpdate = new Set(
+      selectedCandidatesForSwitch.map((c) => c.id)
+    );
+
+    // Update all selected candidates' formTitle
+    setCandidates((prev) =>
+      prev.map((c) =>
+        candidateIdsToUpdate.has(c.id)
+          ? { ...c, formTitle: targetJobOpening.title }
+          : c
+      )
+    );
+
+    // Update selected candidate if it's one of the changed candidates
+    if (
+      selectedCandidate &&
+      candidateIdsToUpdate.has(selectedCandidate.id)
+    ) {
+      setSelectedCandidate({
+        ...selectedCandidate,
+        formTitle: targetJobOpening.title,
+      });
+    }
+
+    // Close modal and reset
+    setIsSwitchJobModalOpen(false);
+    setSelectedCandidatesForSwitch([]);
+    setSelectedCandidateIds(new Set());
+  };
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     // Scroll to top when page changes
@@ -324,30 +397,31 @@ export default function MyCandidatePage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="primary"
               size="sm"
-              onClick={handleSendFeedback}
+              onClick={handleApprove}
               disabled={selectedCandidateIds.size === 0}
             >
-              Send Feedback
+              Approve
             </Button>
             <Button
-              variant="primary"
+              variant="danger"
               size="sm"
-              onClick={handleSendToCoda}
+              onClick={handleBulkReject}
               disabled={selectedCandidateIds.size === 0}
             >
-              Send to Coda
+              Reject
             </Button>
+            <span className="text-gray-300 mx-1">|</span>
             <Button
               variant="primary"
               size="sm"
-              onClick={handleArchive}
+              onClick={handleSwitchJob}
               disabled={selectedCandidateIds.size === 0}
             >
-              Archive
+              Switch Job
             </Button>
             <Button
               variant="primary"
@@ -356,14 +430,6 @@ export default function MyCandidatePage() {
               disabled={selectedCandidateIds.size === 0}
             >
               Take Out
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={handleBulkDelete}
-              disabled={selectedCandidateIds.size === 0}
-            >
-              Delete
             </Button>
           </div>
         </div>
@@ -395,6 +461,16 @@ export default function MyCandidatePage() {
         }}
         candidate={selectedCandidate}
         onStageChange={handleStageChange}
+      />
+
+      <SwitchJobModal
+        isOpen={isSwitchJobModalOpen}
+        onClose={() => {
+          setIsSwitchJobModalOpen(false);
+          setSelectedCandidatesForSwitch([]);
+        }}
+        candidates={selectedCandidatesForSwitch}
+        onConfirm={handleConfirmSwitchJob}
       />
 
       <SendFeedbackModal
@@ -503,38 +579,38 @@ export default function MyCandidatePage() {
         </div>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
+      {/* Reject Confirmation Modal */}
       <Modal
-        isOpen={isDeleteConfirmOpen}
-        onClose={() => setIsDeleteConfirmOpen(false)}
-        title="Konfirmasi Hapus"
+        isOpen={isRejectConfirmOpen}
+        onClose={() => setIsRejectConfirmOpen(false)}
+        title="Konfirmasi Reject"
         size="md"
       >
         <div className="space-y-4">
           <p className="text-gray-600">
-            Apakah Anda yakin ingin menghapus <strong>{selectedCandidateIds.size}</strong> kandidat yang dipilih?
+            Apakah Anda yakin ingin menolak <strong>{selectedCandidateIds.size}</strong> kandidat yang dipilih?
           </p>
           <p className="text-sm text-red-600 font-medium">
-            Tindakan ini tidak dapat dibatalkan. Data kandidat akan dihapus secara permanen.
+            Tindakan ini tidak dapat dibatalkan. Kandidat akan dipindahkan ke halaman Rejected.
           </p>
           <div className="flex justify-end gap-3 pt-4">
             <Button
               variant="outline"
-              onClick={() => setIsDeleteConfirmOpen(false)}
+              onClick={() => setIsRejectConfirmOpen(false)}
             >
               Batal
             </Button>
-            <Button variant="danger" onClick={handleConfirmDelete}>
-              Hapus
+            <Button variant="danger" onClick={handleConfirmReject}>
+              Reject
             </Button>
           </div>
         </div>
       </Modal>
 
-      {/* Delete Success Modal */}
+      {/* Reject Success Modal */}
       <Modal
-        isOpen={isDeleteSuccessOpen}
-        onClose={() => setIsDeleteSuccessOpen(false)}
+        isOpen={isRejectSuccessOpen}
+        onClose={() => setIsRejectSuccessOpen(false)}
         title=""
         size="md"
       >
@@ -544,16 +620,16 @@ export default function MyCandidatePage() {
           </div>
           <div className="text-center">
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Kandidat Berhasil Dihapus!
+              Kandidat Berhasil Ditolak!
             </h3>
             <p className="text-gray-600">
-              <strong>{deletedCount}</strong> kandidat telah berhasil dihapus.
+              <strong>{rejectedCount}</strong> kandidat telah berhasil ditolak dan dipindahkan ke halaman Rejected.
             </p>
           </div>
           <div className="flex justify-center pt-4">
             <Button
               variant="primary"
-              onClick={() => setIsDeleteSuccessOpen(false)}
+              onClick={() => setIsRejectSuccessOpen(false)}
             >
               Tutup
             </Button>

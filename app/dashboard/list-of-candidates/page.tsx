@@ -4,23 +4,37 @@ import { useState, useMemo, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { CandidateTable } from "@/components/candidate/candidate-table";
 import { CandidateReviewModal } from "@/components/candidate/candidate-review-modal";
+import { SwitchJobModal } from "@/components/candidate/switch-job-modal";
 import { Pagination } from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { dummyCandidates } from "@/lib/data/dummy-candidates";
 import { enrichCandidateData } from "@/lib/data/candidate-details";
-import type { Candidate, CandidateStage } from "@/types/candidate";
+import type {
+  Candidate,
+  CandidateStage,
+  ReadyFor,
+  CandidateStatus,
+} from "@/types/candidate";
+import type { ApplicationForm } from "@/types/application-form";
 
 const ITEMS_PER_PAGE = 10;
 
-export default function ArchivePage() {
+export default function ListOfCandidatesPage() {
   const [candidates, setCandidates] = useState<Candidate[]>(dummyCandidates);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCandidate, setSelectedCandidate] =
     useState<Candidate | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isSwitchJobModalOpen, setIsSwitchJobModalOpen] = useState(false);
+  const [selectedCandidatesForSwitch, setSelectedCandidatesForSwitch] =
+    useState<Candidate[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [readyForFilter, setReadyForFilter] = useState<ReadyFor | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<CandidateStatus | "all">(
+    "all"
+  );
   const [stageFilter, setStageFilter] = useState<CandidateStage | "all">("all");
   const [selectedCandidateIds, setSelectedCandidateIds] = useState<Set<string>>(
     new Set()
@@ -30,28 +44,39 @@ export default function ArchivePage() {
   const filteredCandidates = useMemo(() => {
     let filtered = candidates;
 
+    // Filter by ready for
+    if (readyForFilter !== "all") {
+      filtered = filtered.filter((c) => c.readyFor === readyForFilter);
+    }
+
+    // Filter by status
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((c) => c.status === statusFilter);
+    }
+
     // Filter by stage
     if (stageFilter !== "all") {
       filtered = filtered.filter((c) => c.stage === stageFilter);
     }
 
-    // Search by name or role
+    // Search by name, role, or form
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (c) =>
           c.name.toLowerCase().includes(query) ||
-          c.role.toLowerCase().includes(query)
+          c.role.toLowerCase().includes(query) ||
+          (c.formTitle && c.formTitle.toLowerCase().includes(query))
       );
     }
 
     return filtered;
-  }, [candidates, searchQuery, stageFilter]);
+  }, [candidates, searchQuery, readyForFilter, statusFilter, stageFilter]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, stageFilter]);
+  }, [searchQuery, readyForFilter, statusFilter, stageFilter]);
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredCandidates.length / ITEMS_PER_PAGE);
@@ -74,14 +99,12 @@ export default function ArchivePage() {
     setCandidates((prev) =>
       prev.map((c) => (c.id === candidateId ? { ...c, stage: newStage } : c))
     );
-    // Update selected candidate if it's the one being changed
     if (selectedCandidate && selectedCandidate.id === candidateId) {
       setSelectedCandidate({ ...selectedCandidate, stage: newStage });
     }
   };
 
   const handleChatWhatsApp = (candidate: Candidate) => {
-    // Open WhatsApp chat
     if (candidate.phoneNumber) {
       const phoneNumber = candidate.phoneNumber.replace(/[^0-9]/g, "");
       const message = encodeURIComponent(
@@ -94,26 +117,15 @@ export default function ArchivePage() {
     }
   };
 
-  const handleTakeOut = () => {
+  const handleReject = () => {
     if (selectedCandidateIds.size === 0) {
-      alert("Please select at least one candidate to take out");
-      return;
-    }
-    // TODO: Implement take out functionality
-    alert(
-      `Take out ${selectedCandidateIds.size} candidate(s) - Feature coming soon`
-    );
-  };
-
-  const handleDelete = () => {
-    if (selectedCandidateIds.size === 0) {
-      alert("Please select at least one candidate to delete");
+      alert("Please select at least one candidate to reject");
       return;
     }
 
     if (
       confirm(
-        `Are you sure you want to delete ${selectedCandidateIds.size} candidate(s)?`
+        `Are you sure you want to reject ${selectedCandidateIds.size} candidate(s)?`
       )
     ) {
       setCandidates((prev) =>
@@ -121,6 +133,52 @@ export default function ArchivePage() {
       );
       setSelectedCandidateIds(new Set());
     }
+  };
+
+  const handleSwitchJob = () => {
+    if (selectedCandidateIds.size === 0) {
+      alert("Please select at least one candidate to switch job");
+      return;
+    }
+
+    const selectedCandidates = candidates.filter((c) =>
+      selectedCandidateIds.has(c.id)
+    );
+
+    if (selectedCandidates.length > 0) {
+      setSelectedCandidatesForSwitch(selectedCandidates);
+      setIsSwitchJobModalOpen(true);
+    }
+  };
+
+  const handleConfirmSwitchJob = (targetJobOpening: ApplicationForm) => {
+    if (selectedCandidatesForSwitch.length === 0) return;
+
+    const candidateIdsToUpdate = new Set(
+      selectedCandidatesForSwitch.map((c) => c.id)
+    );
+
+    setCandidates((prev) =>
+      prev.map((c) =>
+        candidateIdsToUpdate.has(c.id)
+          ? { ...c, formTitle: targetJobOpening.title }
+          : c
+      )
+    );
+
+    if (
+      selectedCandidate &&
+      candidateIdsToUpdate.has(selectedCandidate.id)
+    ) {
+      setSelectedCandidate({
+        ...selectedCandidate,
+        formTitle: targetJobOpening.title,
+      });
+    }
+
+    setIsSwitchJobModalOpen(false);
+    setSelectedCandidatesForSwitch([]);
+    setSelectedCandidateIds(new Set());
   };
 
   const handleSelectCandidate = (candidateId: string, isSelected: boolean) => {
@@ -145,9 +203,22 @@ export default function ArchivePage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // Scroll to top when page changes
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  const readyForOptions = [
+    { value: "all", label: "All Ready For" },
+    { value: "onsite", label: "Onsite" },
+    { value: "hybrid", label: "Hybrid" },
+    { value: "remote", label: "Remote" },
+    { value: "flexible", label: "Flexible" },
+  ];
+
+  const statusOptions = [
+    { value: "all", label: "All Status" },
+    { value: "qualified", label: "Qualified" },
+    { value: "not_qualified", label: "Not Qualified" },
+  ];
 
   const stageOptions = [
     { value: "all", label: "All Stages" },
@@ -160,20 +231,34 @@ export default function ArchivePage() {
     <DashboardLayout>
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Saved</h1>
+          <h1 className="text-2xl font-bold text-gray-900">List of Candidates</h1>
           <p className="text-sm text-gray-600 mt-1">
-            View archived forms and candidates
+            View and manage all candidates
           </p>
         </div>
 
         {/* Search and Filter Section */}
         <div className="bg-white shadow-sm rounded-xl p-4 mb-4 border border-gray-100">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <Input
               type="text"
-              placeholder="Search by name or role..."
+              placeholder="Search by name, role, or form..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <Select
+              options={readyForOptions}
+              value={readyForFilter}
+              onChange={(e) =>
+                setReadyForFilter(e.target.value as ReadyFor | "all")
+              }
+            />
+            <Select
+              options={statusOptions}
+              value={statusFilter}
+              onChange={(e) =>
+                setStatusFilter(e.target.value as CandidateStatus | "all")
+              }
             />
             <Select
               options={stageOptions}
@@ -189,18 +274,18 @@ export default function ArchivePage() {
             <Button
               variant="primary"
               size="sm"
-              onClick={handleTakeOut}
+              onClick={handleSwitchJob}
               disabled={selectedCandidateIds.size === 0}
             >
-              Pick
+              Switch Job
             </Button>
             <Button
               variant="danger"
               size="sm"
-              onClick={handleDelete}
+              onClick={handleReject}
               disabled={selectedCandidateIds.size === 0}
             >
-              Delete
+              Reject
             </Button>
           </div>
         </div>
@@ -213,6 +298,7 @@ export default function ArchivePage() {
             onChatWhatsApp={handleChatWhatsApp}
             onSelectCandidate={handleSelectCandidate}
             onSelectAll={handleSelectAll}
+            showStatus={true}
           />
           {totalPages > 1 && (
             <Pagination
@@ -232,6 +318,16 @@ export default function ArchivePage() {
         }}
         candidate={selectedCandidate}
         onStageChange={handleStageChange}
+      />
+
+      <SwitchJobModal
+        isOpen={isSwitchJobModalOpen}
+        onClose={() => {
+          setIsSwitchJobModalOpen(false);
+          setSelectedCandidatesForSwitch([]);
+        }}
+        candidates={selectedCandidatesForSwitch}
+        onConfirm={handleConfirmSwitchJob}
       />
     </DashboardLayout>
   );

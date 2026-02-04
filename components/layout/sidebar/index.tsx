@@ -14,24 +14,32 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    label: "New Candidates",
+    label: "Dashboard",
     href: "/dashboard",
+  },
+  {
+    label: "New Candidates",
+    href: "/dashboard/new-candidates",
   },
   {
     label: "In Review",
     href: "/dashboard/my-candidate",
   },
   {
-    label: "Saved",
-    href: "/dashboard/archive",
+    label: "Approved",
+    href: "/dashboard/approved",
+  },
+  {
+    label: "Rejected",
+    href: "/dashboard/rejected",
+  },
+  {
+    label: "List of Candidates",
+    href: "/dashboard/list-of-candidates",
   },
   {
     label: "Job Opening",
     href: "/dashboard/application-form",
-  },
-  {
-    label: "Feedback Template",
-    href: "/dashboard/feedback-messaging",
   },
   {
     label: "Profile",
@@ -40,8 +48,8 @@ const navItems: NavItem[] = [
 ];
 
 // Split navigation items into two sections
-const primaryNavItems = navItems.slice(0, 3); // Dashboard, My Candidate, Archive
-const secondaryNavItems = navItems.slice(3); // Application Form, Feedback Messaging, Profile
+const primaryNavItems = navItems.slice(0, 6); // Dashboard, New Candidates, In Review, Approved, Rejected, List of Candidates
+const secondaryNavItems = navItems.slice(6); // Job Opening, Profile
 
 export const Sidebar = () => {
   const pathname = usePathname();
@@ -70,7 +78,7 @@ export const Sidebar = () => {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto p-4">
-        {/* Primary Section: Backlog, In Review, Saved */}
+        {/* Primary Section: Candidate Applications */}
         <div className="mb-2">
           <h3 className="px-4 py-1.5 text-[10px] font-medium text-gray-400 uppercase tracking-wider">
             Candidate Applications

@@ -26,6 +26,7 @@ export interface FeedbackHistory {
 
 export type ReadyFor = "onsite" | "hybrid" | "remote" | "flexible";
 export type CandidateStatus = "qualified" | "not_qualified";
+export type EmploymentType = "full_time" | "part_time" | "freelance";
 
 export interface Candidate {
   id: string;
@@ -39,6 +40,7 @@ export interface Candidate {
   stage: CandidateStage;
   status?: CandidateStatus;
   readyFor?: ReadyFor;
+  type?: EmploymentType; // Full Time, Part Time, Freelance
   preferredStartDate?: Date;
   phoneNumber?: string;
   education?: Education[];

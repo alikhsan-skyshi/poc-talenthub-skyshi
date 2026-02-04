@@ -22,6 +22,10 @@ const navItems: NavItem[] = [
     href: "/admin/account",
   },
   {
+    label: "Feedback Template",
+    href: "/admin/feedback-template",
+  },
+  {
     label: "Template Form",
     href: "/admin/template-form",
   },

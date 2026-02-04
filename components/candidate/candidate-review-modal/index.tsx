@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Modal } from "@/components/ui/modal";
 import { Tabs } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +12,9 @@ import {
   ItalicIcon,
   UnderlineIcon,
   ListBulletIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  XMarkIcon,
 } from "@/components/ui/icons";
 import type { Candidate, CandidateStage } from "@/types/candidate";
 
@@ -21,6 +23,14 @@ interface CandidateReviewModalProps {
   onClose: () => void;
   candidate: Candidate | null;
   onStageChange?: (candidateId: string, newStage: CandidateStage) => void;
+  showPickReject?: boolean; // If true, show Pick and Reject buttons instead of Send Feedback
+  onPick?: () => void;
+  onReject?: () => void;
+  showStatusLabel?: boolean; // If true, show Status label instead of Stage dropdown
+  onPrevious?: () => void; // Navigate to previous candidate
+  onNext?: () => void; // Navigate to next candidate
+  hasPrevious?: boolean; // Whether there is a previous candidate
+  hasNext?: boolean; // Whether there is a next candidate
 }
 
 export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
@@ -28,6 +38,14 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
   onClose,
   candidate,
   onStageChange,
+  showPickReject = false,
+  onPick,
+  onReject,
+  showStatusLabel = false,
+  onPrevious,
+  onNext,
+  hasPrevious = false,
+  hasNext = false,
 }) => {
   const [activeTab, setActiveTab] = useState("profile");
   const [notes, setNotes] = useState("");
@@ -106,381 +124,479 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
     { value: "ready_for_interview", label: "Ready for Interview" },
   ];
 
-  return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={`Review Candidate - ${candidate.name}`}
-      size="xl"
-    >
-      <div className="space-y-4">
-        <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+  if (!isOpen) return null;
 
-        {/* Stage Selector */}
-        <div className="flex items-center justify-between pt-2 pb-4 border-b border-gray-200">
-          <div className="flex items-center gap-3">
-            <label className="text-sm font-medium text-gray-700">
-              Stage:
-            </label>
-            <Select
-              options={stageOptions}
-              value={currentStage}
-              onChange={(e) =>
-                handleStageChange(e.target.value as CandidateStage)
-              }
-              className="w-48"
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+          onClick={onClose}
+        ></div>
+        <div className="relative bg-white rounded-xl shadow-xl border border-gray-100 w-full max-w-[90vw] max-h-[90vh] flex flex-col">
+          {/* Previous Button - Left Side */}
+          {(onPrevious || onNext) && (
+            <>
+              <button
+                onClick={onPrevious}
+                disabled={!hasPrevious}
+                className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-12 z-10 p-3 rounded-full bg-white shadow-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors ${
+                  !hasPrevious ? "opacity-30" : ""
+                }`}
+                aria-label="Previous candidate"
+              >
+                <ArrowLeftIcon className="w-6 h-6 text-gray-700" />
+              </button>
+              {/* Next Button - Right Side */}
+              <button
+                onClick={onNext}
+                disabled={!hasNext}
+                className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-12 z-10 p-3 rounded-full bg-white shadow-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors ${
+                  !hasNext ? "opacity-30" : ""
+                }`}
+                aria-label="Next candidate"
+              >
+                <ArrowRightIcon className="w-6 h-6 text-gray-700" />
+              </button>
+            </>
+          )}
+          {/* Modal Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-100 flex-shrink-0">
+            <h3 className="text-lg font-semibold text-gray-900">
+              {candidate.formTitle || candidate.role || "Review Candidate"}
+            </h3>
+            <IconButton
+              icon={<XMarkIcon />}
+              variant="secondary"
+              size="sm"
+              onClick={onClose}
+              tooltip="Close"
             />
           </div>
-        </div>
+          
+          {/* Scrollable Content */}
+          <div className="p-6 overflow-y-auto flex-1">
+            <div className="space-y-4">
+              <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
-        <div className="mt-4">
-          {activeTab === "profile" && (
-            <div className="space-y-6">
-              {/* Personal Information Section */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Personal Information
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Nama
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">{candidate.name}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Phone Number
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {candidate.phoneNumber || "Not provided"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Email
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">{candidate.email}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Jenjang Pendidikan
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {candidate.educationLevel || "Not provided"}
-                    </p>
-                  </div>
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Asal Pendidikan
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {candidate.educationInstitution || "Not provided"}
-                    </p>
-                  </div>
+              {/* Stage Selector / Status Label */}
+              <div className="flex items-center justify-between pt-2 pb-4 border-b border-gray-200">
+                <div className="flex items-center gap-3">
+                  {showStatusLabel ? (
+                    <>
+                      <label className="text-sm font-medium text-gray-700">
+                        Status:
+                      </label>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          candidate.status === "qualified"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {candidate.status === "qualified" ? "Qualified" : "Not Qualified"}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <label className="text-sm font-medium text-gray-700">
+                        Stage:
+                      </label>
+                      <Select
+                        options={stageOptions}
+                        value={currentStage}
+                        onChange={(e) =>
+                          handleStageChange(e.target.value as CandidateStage)
+                        }
+                        className="w-48"
+                      />
+                    </>
+                  )}
                 </div>
               </div>
 
-              {/* Applications Section */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Applications
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Tanggal Apply
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {formatDate(candidate.appliedAt)}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Application Sources
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {candidate.applicationSource || "Not provided"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Posisi Dilamar
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">{candidate.role}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Pengalaman
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {candidate.experience}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Skill
-                    </label>
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {candidate.skills.map((skill, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
-                        >
-                          {skill}
-                        </span>
-                      ))}
+              <div className="mt-4">
+                {activeTab === "profile" && (
+                  <div className="space-y-6">
+                    {/* Personal Information Section */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        Personal Information
+                      </h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Nama
+                          </label>
+                          <p className="mt-1 text-sm text-gray-900">{candidate.name}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Phone Number
+                          </label>
+                          <p className="mt-1 text-sm text-gray-900">
+                            {candidate.phoneNumber || "Not provided"}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Email
+                          </label>
+                          <p className="mt-1 text-sm text-gray-900">{candidate.email}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Jenjang Pendidikan
+                          </label>
+                          <p className="mt-1 text-sm text-gray-900">
+                            {candidate.educationLevel || "Not provided"}
+                          </p>
+                        </div>
+                        <div className="col-span-2">
+                          <label className="block text-sm font-medium text-gray-700">
+                            Asal Pendidikan
+                          </label>
+                          <p className="mt-1 text-sm text-gray-900">
+                            {candidate.educationInstitution || "Not provided"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Applications Section */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        Applications
+                      </h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Tanggal Apply
+                          </label>
+                          <p className="mt-1 text-sm text-gray-900">
+                            {formatDate(candidate.appliedAt)}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Application Sources
+                          </label>
+                          <p className="mt-1 text-sm text-gray-900">
+                            {candidate.applicationSource || "Not provided"}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Posisi Dilamar
+                          </label>
+                          <p className="mt-1 text-sm text-gray-900">{candidate.role}</p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Pengalaman
+                          </label>
+                          <p className="mt-1 text-sm text-gray-900">
+                            {candidate.experience}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Skill
+                          </label>
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {candidate.skills.map((skill, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800"
+                              >
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Last Salary
+                          </label>
+                          <p className="mt-1 text-sm text-gray-900">
+                            {candidate.lastSalary || "Not disclosed"}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700">
+                            Expected Salary
+                          </label>
+                          <p className="mt-1 text-sm text-gray-900">
+                            {candidate.expectedSalary || "Negotiable"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Notes Section */}
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                        Notes
+                      </h3>
+                      {/* Formatting Toolbar */}
+                      <div className="flex items-center gap-1 p-2 border border-gray-300 rounded-t-md bg-gray-50">
+                        <IconButton
+                          icon={<BoldIcon className="w-4 h-4" />}
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleFormat("bold")}
+                          tooltip="Bold"
+                        />
+                        <IconButton
+                          icon={<ItalicIcon className="w-4 h-4" />}
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleFormat("italic")}
+                          tooltip="Italic"
+                        />
+                        <IconButton
+                          icon={<UnderlineIcon className="w-4 h-4" />}
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleFormat("underline")}
+                          tooltip="Underline"
+                        />
+                        <div className="w-px h-6 bg-gray-300 mx-1" />
+                        <IconButton
+                          icon={<ListBulletIcon className="w-4 h-4" />}
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleFormat("insertUnorderedList")}
+                          tooltip="Bullet Point"
+                        />
+                      </div>
+                      {/* Rich Text Editor */}
+                      <div
+                        ref={notesEditorRef}
+                        contentEditable
+                        onInput={handleNotesChange}
+                        className="w-full min-h-[150px] px-3 py-2 border border-t-0 border-gray-300 rounded-b-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y overflow-y-auto"
+                        style={{
+                          whiteSpace: "pre-wrap",
+                          wordWrap: "break-word",
+                        }}
+                        data-placeholder="Tambahkan catatan tentang kandidat ini..."
+                      />
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Last Salary
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {candidate.lastSalary || "Not disclosed"}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Expected Salary
-                    </label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      {candidate.expectedSalary || "Negotiable"}
-                    </p>
-                  </div>
-                </div>
-              </div>
+                )}
 
-              {/* Notes Section */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Notes
-                </h3>
-                {/* Formatting Toolbar */}
-                <div className="flex items-center gap-1 p-2 border border-gray-300 rounded-t-md bg-gray-50">
-                  <IconButton
-                    icon={<BoldIcon className="w-4 h-4" />}
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleFormat("bold")}
-                    tooltip="Bold"
-                  />
-                  <IconButton
-                    icon={<ItalicIcon className="w-4 h-4" />}
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleFormat("italic")}
-                    tooltip="Italic"
-                  />
-                  <IconButton
-                    icon={<UnderlineIcon className="w-4 h-4" />}
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleFormat("underline")}
-                    tooltip="Underline"
-                  />
-                  <div className="w-px h-6 bg-gray-300 mx-1" />
-                  <IconButton
-                    icon={<ListBulletIcon className="w-4 h-4" />}
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => handleFormat("insertUnorderedList")}
-                    tooltip="Bullet Point"
-                  />
-                </div>
-                {/* Rich Text Editor */}
-                <div
-                  ref={notesEditorRef}
-                  contentEditable
-                  onInput={handleNotesChange}
-                  className="w-full min-h-[150px] px-3 py-2 border border-t-0 border-gray-300 rounded-b-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-y overflow-y-auto"
-                  style={{
-                    whiteSpace: "pre-wrap",
-                    wordWrap: "break-word",
-                  }}
-                  data-placeholder="Tambahkan catatan tentang kandidat ini..."
-                />
-              </div>
-            </div>
-          )}
-
-          {activeTab === "cv" && (
-            <div className="space-y-4">
-              {candidate.cvUrl ? (
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <iframe
-                    src={candidate.cvUrl}
-                    className="w-full h-[600px] border-0 rounded"
-                    title="Candidate CV"
-                  />
-                  <div className="mt-4 flex justify-end">
-                    <a
-                      href={candidate.cvUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-primary hover:text-primary-700"
-                    >
-                      Open in new tab
-                    </a>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-12 border border-gray-200 rounded-lg">
-                  <p className="text-gray-500">CV not available</p>
+              {activeTab === "cv" && (
+                <div className="space-y-4">
+                  {candidate.cvUrl ? (
+                    <div className="border border-gray-200 rounded-lg p-4">
+                      <iframe
+                        src={candidate.cvUrl}
+                        className="w-full h-[600px] border-0 rounded"
+                        title="Candidate CV"
+                      />
+                      <div className="mt-4 flex justify-end">
+                        <a
+                          href={candidate.cvUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:text-primary-700"
+                        >
+                          Open in new tab
+                        </a>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 border border-gray-200 rounded-lg">
+                      <p className="text-gray-500">CV not available</p>
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          )}
 
-          {activeTab === "history" && (
-            <div className="space-y-6">
-              {/* Application History Section */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Application History
-                </h3>
-                {candidate.applicationHistory &&
-                candidate.applicationHistory.length > 0 ? (
-                  <div className="space-y-3">
-                    {candidate.applicationHistory.map((history) => {
-                      // Check if this is the active form (matching candidate's formTitle or role)
-                      const isActiveForm =
-                        candidate.formTitle === history.jobTitle ||
-                        candidate.role === history.jobTitle;
-                      
-                      return (
-                        <div
-                          key={history.id}
-                          className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
-                        >
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <p className="font-medium text-gray-900">
-                                  {history.jobTitle}
-                                </p>
-                                {isActiveForm && (
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                                    Active Form
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-sm text-gray-600">
-                                {history.companyName}
-                              </p>
-                              <p className="text-xs text-gray-500 mt-1">
-                                Applied on {formatDate(history.appliedAt)}
-                              </p>
-                            </div>
-                            <span
-                              className={`
-                            px-2.5 py-0.5 rounded-full text-xs font-medium
-                            ${
-                              history.status === "ready_for_interview"
-                                ? "bg-green-100 text-green-800"
-                                : history.status === "cv_review"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-primary-100 text-primary-800"
-                            }
-                          `}
+              {activeTab === "history" && (
+                <div className="space-y-6">
+                  {/* Application History Section */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Application History
+                    </h3>
+                    {candidate.applicationHistory &&
+                    candidate.applicationHistory.length > 0 ? (
+                      <div className="space-y-3">
+                        {candidate.applicationHistory.map((history) => {
+                          // Check if this is the active form (matching candidate's formTitle or role)
+                          const isActiveForm =
+                            candidate.formTitle === history.jobTitle ||
+                            candidate.role === history.jobTitle;
+                          
+                          return (
+                            <div
+                              key={history.id}
+                              className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
                             >
-                              {history.status.replace("_", " ")}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <p className="font-medium text-gray-900">
+                                      {history.jobTitle}
+                                    </p>
+                                    {isActiveForm && (
+                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                                        Active Form
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-sm text-gray-600">
+                                    {history.companyName}
+                                  </p>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    Applied on {formatDate(history.appliedAt)}
+                                  </p>
+                                </div>
+                                <span
+                                  className={`
+                                    px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    ${
+                                      history.status === "ready_for_interview"
+                                        ? "bg-green-100 text-green-800"
+                                        : history.status === "cv_review"
+                                        ? "bg-yellow-100 text-yellow-800"
+                                        : "bg-primary-100 text-primary-800"
+                                    }
+                                  `}
+                                >
+                                  {history.status.replace("_", " ")}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 border border-gray-200 rounded-lg">
+                        <p className="text-gray-500">No application history</p>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="text-center py-12 border border-gray-200 rounded-lg">
-                    <p className="text-gray-500">No application history</p>
-                  </div>
-                )}
-              </div>
 
-              {/* Feedback History Section */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Feedback History
-                </h3>
-                {candidate.feedbackHistory &&
-                candidate.feedbackHistory.length > 0 ? (
-                  <div className="space-y-3">
-                    {candidate.feedbackHistory.map((feedback) => {
-                      const formatDateTime = (date: Date) => {
-                        const day = date.getDate().toString().padStart(2, "0");
-                        const month = (date.getMonth() + 1)
-                          .toString()
-                          .padStart(2, "0");
-                        const year = date.getFullYear();
-                        const hours = date.getHours().toString().padStart(2, "0");
-                        const minutes = date
-                          .getMinutes()
-                          .toString()
-                          .padStart(2, "0");
-                        return `${day}/${month}/${year} ${hours}.${minutes}`;
-                      };
+                  {/* Feedback History Section */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Feedback History
+                    </h3>
+                    {candidate.feedbackHistory &&
+                    candidate.feedbackHistory.length > 0 ? (
+                      <div className="space-y-3">
+                        {candidate.feedbackHistory.map((feedback) => {
+                          const formatDateTime = (date: Date) => {
+                            const day = date.getDate().toString().padStart(2, "0");
+                            const month = (date.getMonth() + 1)
+                              .toString()
+                              .padStart(2, "0");
+                            const year = date.getFullYear();
+                            const hours = date.getHours().toString().padStart(2, "0");
+                            const minutes = date
+                              .getMinutes()
+                              .toString()
+                              .padStart(2, "0");
+                            return `${day}/${month}/${year} ${hours}.${minutes}`;
+                          };
 
-                      return (
-                        <div
-                          key={feedback.id}
-                          className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
-                        >
-                          <div className="mb-2">
-                            <div className="flex-1">
-                              <p className="font-medium text-gray-900">
-                                {feedback.templateTitle}
-                              </p>
-                              <p className="text-sm text-gray-600 mt-1">
-                                {feedback.subject}
-                              </p>
+                          return (
+                            <div
+                              key={feedback.id}
+                              className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
+                            >
+                              <div className="mb-2">
+                                <div className="flex-1">
+                                  <p className="font-medium text-gray-900">
+                                    {feedback.templateTitle}
+                                  </p>
+                                  <p className="text-sm text-gray-600 mt-1">
+                                    {feedback.subject}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
+                                <div className="text-xs text-gray-500">
+                                  <span className="font-medium">Sent by:</span>{" "}
+                                  {feedback.sentBy}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {formatDateTime(feedback.sentAt)}
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
-                            <div className="text-xs text-gray-500">
-                              <span className="font-medium">Sent by:</span>{" "}
-                              {feedback.sentBy}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {formatDateTime(feedback.sentAt)}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 border border-gray-200 rounded-lg">
+                        <p className="text-gray-500">
+                          No feedback history available
+                        </p>
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="text-center py-8 border border-gray-200 rounded-lg">
-                    <p className="text-gray-500">
-                      No feedback history available
-                    </p>
-                  </div>
-                )}
+                </div>
+              )}
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 mt-6">
-          <Button
-            variant="outline"
-            onClick={handleChatWhatsApp}
-            disabled={!candidate.phoneNumber}
-            className="flex items-center gap-2"
-          >
-            <ChatBubbleIcon className="w-4 h-4" />
-            WhatsApp
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleSendFeedback}
-            className="flex items-center gap-2"
-          >
-            Send Feedback
-          </Button>
+          </div>
+          
+          {/* Footer with Action Buttons */}
+          <div className="flex justify-end items-center gap-3 p-6 border-t border-gray-200 flex-shrink-0">
+            {showPickReject ? (
+              <>
+                <Button
+                  variant="primary"
+                  onClick={onPick}
+                  className="flex items-center gap-2"
+                >
+                  Pick
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={onReject}
+                  className="flex items-center gap-2"
+                >
+                  Reject
+                </Button>
+                <span className="text-gray-300 self-center">|</span>
+                <Button
+                  variant="outline"
+                  onClick={handleChatWhatsApp}
+                  disabled={!candidate.phoneNumber}
+                  className="flex items-center gap-2"
+                >
+                  <ChatBubbleIcon className="w-4 h-4" />
+                  WhatsApp
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={handleChatWhatsApp}
+                  disabled={!candidate.phoneNumber}
+                  className="flex items-center gap-2"
+                >
+                  <ChatBubbleIcon className="w-4 h-4" />
+                  WhatsApp
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleSendFeedback}
+                  className="flex items-center gap-2"
+                >
+                  Send Feedback
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
-    </Modal>
+    </div>
   );
 };
