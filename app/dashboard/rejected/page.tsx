@@ -191,6 +191,7 @@ export default function RejectedPage() {
         hideStageSelector={true}
         showApprovedButtons={true}
         onTransferApproved={selectedCandidate ? () => handleTransferSingle(selectedCandidate.id) : undefined}
+        transferButtonLabel="Add to Job"
       />
 
       <SwitchJobModal
@@ -201,6 +202,8 @@ export default function RejectedPage() {
         }}
         candidates={selectedCandidatesForSwitch}
         onConfirm={handleConfirmSwitchJob}
+        modalTitle="Add to Job"
+        buttonLabel="Add to Job"
       />
     </DashboardLayout>
   );

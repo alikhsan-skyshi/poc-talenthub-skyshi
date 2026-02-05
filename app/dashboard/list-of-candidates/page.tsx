@@ -208,6 +208,7 @@ export default function ListOfCandidatesPage() {
         hideStageSelector={true}
         showApprovedButtons={true}
         onTransferApproved={selectedCandidate ? () => handleTransferSingle(selectedCandidate.id) : undefined}
+        transferButtonLabel="Add to Job"
       />
 
       <SwitchJobModal
@@ -218,6 +219,8 @@ export default function ListOfCandidatesPage() {
         }}
         candidates={selectedCandidatesForSwitch}
         onConfirm={handleConfirmSwitchJob}
+        modalTitle="Add to Job"
+        buttonLabel="Add to Job"
       />
     </DashboardLayout>
   );

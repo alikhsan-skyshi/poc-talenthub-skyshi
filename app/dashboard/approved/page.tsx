@@ -4,7 +4,6 @@ import { useState, useMemo, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { CandidateTable } from "@/components/candidate/candidate-table";
 import { CandidateReviewModal } from "@/components/candidate/candidate-review-modal";
-import { SwitchJobModal } from "@/components/candidate/switch-job-modal";
 import { Pagination } from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
 import { dummyCandidates } from "@/lib/data/dummy-candidates";
@@ -13,8 +12,6 @@ import type {
   Candidate,
   CandidateStage,
 } from "@/types/candidate";
-import type { ApplicationForm } from "@/types/application-form";
-import { getJobOpeningOptions, getJobOpeningById } from "@/lib/data/job-openings";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -26,9 +23,6 @@ export default function ApprovedPage() {
   const [selectedCandidate, setSelectedCandidate] =
     useState<Candidate | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [isSwitchJobModalOpen, setIsSwitchJobModalOpen] = useState(false);
-  const [selectedCandidatesForSwitch, setSelectedCandidatesForSwitch] =
-    useState<Candidate[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter and search candidates
@@ -93,44 +87,6 @@ export default function ApprovedPage() {
     }
   };
 
-  const handleTransferSingle = (candidateId: string) => {
-    const candidate = candidates.find((c) => c.id === candidateId);
-    if (!candidate) return;
-    
-    // Close review modal and open switch job modal
-    setIsReviewModalOpen(false);
-    setSelectedCandidatesForSwitch([candidate]);
-    setIsSwitchJobModalOpen(true);
-  };
-
-  const handleConfirmSwitchJob = (targetJobOpening: ApplicationForm) => {
-    if (selectedCandidatesForSwitch.length === 0) return;
-
-    const candidateIdsToUpdate = new Set(
-      selectedCandidatesForSwitch.map((c) => c.id)
-    );
-
-    setCandidates((prev) =>
-      prev.map((c) =>
-        candidateIdsToUpdate.has(c.id)
-          ? { ...c, formTitle: targetJobOpening.title }
-          : c
-      )
-    );
-
-    if (
-      selectedCandidate &&
-      candidateIdsToUpdate.has(selectedCandidate.id)
-    ) {
-      setSelectedCandidate({
-        ...selectedCandidate,
-        formTitle: targetJobOpening.title,
-      });
-    }
-
-    setIsSwitchJobModalOpen(false);
-    setSelectedCandidatesForSwitch([]);
-  };
 
 
 
@@ -193,17 +149,6 @@ export default function ApprovedPage() {
         onStageChange={handleStageChange}
         hideStageSelector={true}
         showApprovedButtons={true}
-        onTransferApproved={selectedCandidate ? () => handleTransferSingle(selectedCandidate.id) : undefined}
-      />
-
-      <SwitchJobModal
-        isOpen={isSwitchJobModalOpen}
-        onClose={() => {
-          setIsSwitchJobModalOpen(false);
-          setSelectedCandidatesForSwitch([]);
-        }}
-        candidates={selectedCandidatesForSwitch}
-        onConfirm={handleConfirmSwitchJob}
       />
 
     </DashboardLayout>

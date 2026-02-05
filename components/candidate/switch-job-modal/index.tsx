@@ -13,6 +13,8 @@ interface SwitchJobModalProps {
   onClose: () => void;
   candidates: Candidate[];
   onConfirm: (targetJobOpening: ApplicationForm) => void | Promise<void>;
+  modalTitle?: string; // Custom title for the modal (default: "Transfer")
+  buttonLabel?: string; // Custom label for the confirm button (default: "Transfer")
 }
 
 export const SwitchJobModal: React.FC<SwitchJobModalProps> = ({
@@ -20,11 +22,12 @@ export const SwitchJobModal: React.FC<SwitchJobModalProps> = ({
   onClose,
   candidates,
   onConfirm,
+  modalTitle = "Transfer",
+  buttonLabel = "Transfer",
 }) => {
   const [selectedJobId, setSelectedJobId] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  const [keepPreviousJobData, setKeepPreviousJobData] = useState<boolean>(true);
 
   // Get unique current job titles from selected candidates
   const currentJobTitles = Array.from(
@@ -43,7 +46,6 @@ export const SwitchJobModal: React.FC<SwitchJobModalProps> = ({
     if (isOpen) {
       setSelectedJobId("");
       setError("");
-      setKeepPreviousJobData(true); // Reset to default checked
     }
   }, [isOpen]);
 
@@ -94,7 +96,7 @@ export const SwitchJobModal: React.FC<SwitchJobModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Transfer"
+      title={modalTitle}
       size="md"
     >
       <div className="space-y-4">
@@ -164,23 +166,6 @@ export const SwitchJobModal: React.FC<SwitchJobModalProps> = ({
           )}
         </div>
 
-        {/* Keep Previous Job Data Checkbox */}
-        <div className="flex items-start">
-          <input
-            type="checkbox"
-            id="keepPreviousJobData"
-            checked={keepPreviousJobData}
-            onChange={(e) => setKeepPreviousJobData(e.target.checked)}
-            className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded mt-0.5"
-          />
-          <label
-            htmlFor="keepPreviousJobData"
-            className="ml-2 text-sm text-gray-700 cursor-pointer"
-          >
-            Keep candidate data from previous jobs
-          </label>
-        </div>
-
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
@@ -191,7 +176,7 @@ export const SwitchJobModal: React.FC<SwitchJobModalProps> = ({
             onClick={handleConfirm}
             disabled={!selectedJobId || isLoading || jobOptions.length === 0}
           >
-            {isLoading ? "Transferring..." : "Transfer"}
+            {isLoading ? `${buttonLabel}ing...` : buttonLabel}
           </Button>
         </div>
       </div>

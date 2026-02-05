@@ -614,6 +614,8 @@ export default function MyCandidatePage() {
         }}
         candidates={selectedCandidatesForSwitch}
         onConfirm={handleConfirmSwitchJob}
+        modalTitle="Add to Job"
+        buttonLabel="Add to Job"
       />
 
       <CandidateFeedbackModal

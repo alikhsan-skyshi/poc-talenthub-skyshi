@@ -40,6 +40,7 @@ interface CandidateReviewModalProps {
   hideStageSelector?: boolean; // If true, hide Stage/Status selector completely
   showApprovedButtons?: boolean; // If true, show Transfer and WhatsApp buttons
   onTransferApproved?: () => void;
+  transferButtonLabel?: string; // Custom label for transfer button (default: "Transfer")
 }
 
 export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
@@ -64,6 +65,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
   hideStageSelector = false,
   showApprovedButtons = false,
   onTransferApproved,
+  transferButtonLabel = "Transfer",
 }) => {
   const [activeTab, setActiveTab] = useState("profile");
   const [notes, setNotes] = useState("");
@@ -658,13 +660,15 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
           <div className="flex justify-end items-center gap-3 p-6 border-t border-gray-200 flex-shrink-0">
             {showApprovedButtons ? (
               <>
-                <Button
-                  variant="primary"
-                  onClick={onTransferApproved}
-                  className="flex items-center gap-2"
-                >
-                  Transfer
-                </Button>
+                {onTransferApproved && (
+                  <Button
+                    variant="primary"
+                    onClick={onTransferApproved}
+                    className="flex items-center gap-2"
+                  >
+                    {transferButtonLabel}
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   onClick={handleChatWhatsApp}
@@ -697,7 +701,7 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                   onClick={onTransfer}
                   className="flex items-center gap-2"
                 >
-                  Transfer
+                  Add to Job
                 </Button>
                 <Button
                   variant="primary"
