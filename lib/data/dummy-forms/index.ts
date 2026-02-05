@@ -10,6 +10,7 @@ export const dummyForms: ApplicationForm[] = [
     applicantCount: 42,
     status: "open",
     createdAt: new Date("2024-01-15T10:30:00"),
+    dueDate: new Date("2024-03-15T18:00:00"),
     waves: [
       {
         waveNumber: 1,
@@ -30,6 +31,7 @@ export const dummyForms: ApplicationForm[] = [
     applicantCount: 28,
     status: "open",
     createdAt: new Date("2024-01-20T14:20:00"),
+    dueDate: new Date("2024-03-20T18:00:00"),
   },
   {
     id: "3",
@@ -39,6 +41,7 @@ export const dummyForms: ApplicationForm[] = [
     applicantCount: 35,
     status: "open",
     createdAt: new Date("2024-01-22T09:15:00"),
+    dueDate: new Date("2024-03-22T18:00:00"),
   },
   {
     id: "4",
@@ -48,6 +51,7 @@ export const dummyForms: ApplicationForm[] = [
     applicantCount: 19,
     status: "closed",
     createdAt: new Date("2024-01-10T11:00:00"),
+    dueDate: new Date("2024-02-10T18:00:00"),
     waves: [
       {
         waveNumber: 1,
@@ -64,6 +68,7 @@ export const dummyForms: ApplicationForm[] = [
     applicantCount: 31,
     status: "open",
     createdAt: new Date("2024-01-25T16:45:00"),
+    dueDate: new Date("2024-03-25T18:00:00"),
   },
   {
     id: "6",
@@ -73,6 +78,7 @@ export const dummyForms: ApplicationForm[] = [
     applicantCount: 24,
     status: "open",
     createdAt: new Date("2024-01-28T13:30:00"),
+    dueDate: new Date("2024-03-28T18:00:00"),
   },
   {
     id: "7",
@@ -82,6 +88,7 @@ export const dummyForms: ApplicationForm[] = [
     applicantCount: 47,
     status: "open",
     createdAt: new Date("2024-02-01T10:00:00"),
+    dueDate: new Date("2024-04-01T18:00:00"),
   },
   {
     id: "8",
@@ -91,6 +98,7 @@ export const dummyForms: ApplicationForm[] = [
     applicantCount: 15,
     status: "closed",
     createdAt: new Date("2024-01-05T08:20:00"),
+    dueDate: new Date("2024-02-05T18:00:00"),
   },
   {
     id: "9",
@@ -100,6 +108,7 @@ export const dummyForms: ApplicationForm[] = [
     applicantCount: 38,
     status: "open",
     createdAt: new Date("2024-02-03T15:10:00"),
+    dueDate: new Date("2024-04-03T18:00:00"),
   },
   {
     id: "10",
@@ -109,6 +118,7 @@ export const dummyForms: ApplicationForm[] = [
     applicantCount: 52,
     status: "open",
     createdAt: new Date("2024-02-05T12:00:00"),
+    dueDate: new Date("2024-04-05T18:00:00"),
   },
   {
     id: "11",
@@ -118,6 +128,7 @@ export const dummyForms: ApplicationForm[] = [
     applicantCount: 29,
     status: "open",
     createdAt: new Date("2024-02-07T09:30:00"),
+    dueDate: new Date("2024-04-07T18:00:00"),
   },
   {
     id: "12",
@@ -127,6 +138,7 @@ export const dummyForms: ApplicationForm[] = [
     applicantCount: 22,
     status: "open",
     createdAt: new Date("2024-02-08T14:15:00"),
+    dueDate: new Date("2024-04-08T18:00:00"),
   },
   {
     id: "13",
@@ -136,6 +148,7 @@ export const dummyForms: ApplicationForm[] = [
     applicantCount: 33,
     status: "open",
     createdAt: new Date("2024-02-10T11:45:00"),
+    dueDate: new Date("2024-04-10T18:00:00"),
   },
   {
     id: "14",
@@ -145,6 +158,7 @@ export const dummyForms: ApplicationForm[] = [
     applicantCount: 41,
     status: "open",
     createdAt: new Date("2024-02-12T10:20:00"),
+    dueDate: new Date("2024-04-12T18:00:00"),
   },
   {
     id: "15",
@@ -154,5 +168,6 @@ export const dummyForms: ApplicationForm[] = [
     applicantCount: 18,
     status: "closed",
     createdAt: new Date("2024-01-08T07:00:00"),
+    dueDate: new Date("2024-02-08T18:00:00"),
   },
 ];

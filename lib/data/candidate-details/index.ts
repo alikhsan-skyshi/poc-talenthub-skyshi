@@ -179,6 +179,7 @@ const getFeedbackHistoryByCandidateId = (
         sentAt: new Date("2024-02-16T10:00:00"),
         sentBy: "John Doe",
         status: "read",
+        jobTitle: "Software Engineer - Full Stack",
       },
       {
         id: "fb-1-2",
@@ -187,6 +188,16 @@ const getFeedbackHistoryByCandidateId = (
         sentAt: new Date("2024-02-14T14:30:00"),
         sentBy: "John Doe",
         status: "delivered",
+        jobTitle: "Software Engineer - Full Stack",
+      },
+      {
+        id: "fb-1-3",
+        templateTitle: "Application Received",
+        subject: "Thank you for applying",
+        sentAt: new Date("2024-01-21T09:00:00"),
+        sentBy: "Jane Smith",
+        status: "read",
+        jobTitle: "Full Stack Developer",
       },
     ],
     "2": [
@@ -197,6 +208,16 @@ const getFeedbackHistoryByCandidateId = (
         sentAt: new Date("2024-02-15T09:00:00"),
         sentBy: "John Doe",
         status: "read",
+        jobTitle: "Product Manager",
+      },
+      {
+        id: "fb-2-2",
+        templateTitle: "CV Review Complete",
+        subject: "Your CV has been reviewed",
+        sentAt: new Date("2024-01-12T10:00:00"),
+        sentBy: "Jane Smith",
+        status: "read",
+        jobTitle: "Senior Product Manager",
       },
     ],
     "3": [
@@ -207,6 +228,7 @@ const getFeedbackHistoryByCandidateId = (
         sentAt: new Date("2024-02-13T16:00:00"),
         sentBy: "John Doe",
         status: "sent",
+        jobTitle: "UI/UX Designer",
       },
     ],
   };

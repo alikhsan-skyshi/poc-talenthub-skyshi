@@ -22,6 +22,15 @@ export interface FeedbackHistory {
   sentAt: Date;
   sentBy: string;
   status: "sent" | "delivered" | "read";
+  jobTitle?: string; // Link to ApplicationHistory by jobTitle
+}
+
+export interface ActionLog {
+  id: string;
+  action: "reviewed" | "approved" | "rejected" | "transfer";
+  performedBy: string; // TA name
+  performedAt: Date;
+  jobTitle?: string; // Link to ApplicationHistory by jobTitle
 }
 
 export type ReadyFor = "onsite" | "hybrid" | "remote" | "flexible";
@@ -47,6 +56,7 @@ export interface Candidate {
   cvUrl?: string;
   applicationHistory?: ApplicationHistory[];
   feedbackHistory?: FeedbackHistory[];
+  actionLog?: ActionLog[];
   // Profile fields
   educationLevel?: string; // e.g., "S-1"
   educationInstitution?: string; // e.g., "Universitas Amikom"

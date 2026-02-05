@@ -41,15 +41,11 @@ const navItems: NavItem[] = [
     label: "Job Opening",
     href: "/dashboard/application-form",
   },
-  {
-    label: "Profile",
-    href: "/dashboard/profile",
-  },
 ];
 
 // Split navigation items into two sections
 const primaryNavItems = navItems.slice(0, 6); // Dashboard, New Candidates, In Review, Approved, Rejected, List of Candidates
-const secondaryNavItems = navItems.slice(6); // Job Opening, Profile
+const secondaryNavItems = navItems.slice(6); // Job Opening
 
 export const Sidebar = () => {
   const pathname = usePathname();

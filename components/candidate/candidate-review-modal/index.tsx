@@ -469,79 +469,53 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
 
               {activeTab === "history" && (
                 <div className="space-y-6">
-                  {/* Application History Section */}
+                  {/* Application History Section with Feedback History */}
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">
                       Application History
                     </h3>
                     {candidate.applicationHistory &&
                     candidate.applicationHistory.length > 0 ? (
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         {candidate.applicationHistory.map((history) => {
-                          // Check if this is the active form (matching candidate's formTitle or role)
-                          const isActiveForm =
-                            candidate.formTitle === history.jobTitle ||
-                            candidate.role === history.jobTitle;
-                          
-                          return (
-                            <div
-                              key={history.id}
-                              className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
-                            >
-                              <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <p className="font-medium text-gray-900">
-                                      {history.jobTitle}
-                                    </p>
-                                    {isActiveForm && (
-                                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
-                                        Active Form
-                                      </span>
-                                    )}
-                                  </div>
-                                  <p className="text-sm text-gray-600">
-                                    {history.companyName}
-                                  </p>
-                                  <p className="text-xs text-gray-500 mt-1">
-                                    Applied on {formatDate(history.appliedAt)}
-                                  </p>
-                                </div>
-                                <span
-                                  className={`
-                                    px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    ${
-                                      history.status === "ready_for_interview"
-                                        ? "bg-green-100 text-green-800"
-                                        : history.status === "cv_review"
-                                        ? "bg-yellow-100 text-yellow-800"
-                                        : "bg-primary-100 text-primary-800"
-                                    }
-                                  `}
-                                >
-                                  {history.status.replace("_", " ")}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="text-center py-12 border border-gray-200 rounded-lg">
-                        <p className="text-gray-500">No application history</p>
-                      </div>
-                    )}
-                  </div>
+                          // Map status to page labels
+                          const getStatusLabel = (status: string) => {
+                            switch (status) {
+                              case "applied":
+                                return "New Candidates";
+                              case "cv_review":
+                                return "In Review";
+                              case "ready_for_interview":
+                                return "Approved";
+                              default:
+                                return "Rejected";
+                            }
+                          };
 
-                  {/* Feedback History Section */}
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                      Feedback History
-                    </h3>
-                    {candidate.feedbackHistory &&
-                    candidate.feedbackHistory.length > 0 ? (
-                      <div className="space-y-3">
-                        {candidate.feedbackHistory.map((feedback) => {
+                          // Map status to badge colors
+                          const getStatusBadgeClass = (status: string) => {
+                            switch (status) {
+                              case "applied":
+                                return "bg-primary-100 text-primary-800";
+                              case "cv_review":
+                                return "bg-yellow-100 text-yellow-800";
+                              case "ready_for_interview":
+                                return "bg-green-100 text-green-800";
+                              default:
+                                return "bg-red-100 text-red-800";
+                            }
+                          };
+
+                          // Get feedback history for this job opening
+                          const relatedFeedback = candidate.feedbackHistory?.filter(
+                            (feedback) => feedback.jobTitle === history.jobTitle
+                          ) || [];
+
+                          // Get action log for this job opening
+                          const relatedActionLog = candidate.actionLog?.filter(
+                            (log) => log.jobTitle === history.jobTitle
+                          ) || [];
+
                           const formatDateTime = (date: Date) => {
                             const day = date.getDate().toString().padStart(2, "0");
                             const month = (date.getMonth() + 1)
@@ -556,39 +530,121 @@ export const CandidateReviewModal: React.FC<CandidateReviewModalProps> = ({
                             return `${day}/${month}/${year} ${hours}.${minutes}`;
                           };
 
+                          const getActionLabel = (action: string) => {
+                            switch (action) {
+                              case "reviewed":
+                                return "Reviewed by";
+                              case "approved":
+                                return "Approved by";
+                              case "rejected":
+                                return "Rejected by";
+                              case "transfer":
+                                return "Transfer by";
+                              default:
+                                return action;
+                            }
+                          };
+                          
                           return (
                             <div
-                              key={feedback.id}
-                              className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
+                              key={history.id}
+                              className="border border-gray-200 rounded-lg overflow-hidden"
                             >
-                              <div className="mb-2">
-                                <div className="flex-1">
-                                  <p className="font-medium text-gray-900">
-                                    {feedback.templateTitle}
-                                  </p>
-                                  <p className="text-sm text-gray-600 mt-1">
-                                    {feedback.subject}
-                                  </p>
+                              {/* Application History Header */}
+                              <div className="p-4 hover:bg-gray-50">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <p className="font-medium text-gray-900">
+                                      {history.jobTitle}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      {history.companyName}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      Applied on {formatDate(history.appliedAt)}
+                                    </p>
+                                  </div>
+                                  <span
+                                    className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeClass(history.status)}`}
+                                  >
+                                    {getStatusLabel(history.status)}
+                                  </span>
                                 </div>
                               </div>
-                              <div className="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
-                                <div className="text-xs text-gray-500">
-                                  <span className="font-medium">Sent by:</span>{" "}
-                                  {feedback.sentBy}
+
+                              {/* Feedback History for this Job Opening */}
+                              {relatedFeedback.length > 0 && (
+                                <div className="border-t border-gray-200 bg-gray-50">
+                                  <div className="px-4 py-3">
+                                    <h4 className="text-sm font-medium text-gray-700 mb-3">
+                                      Feedback History
+                                    </h4>
+                                    <div className="space-y-2">
+                                      {relatedFeedback.map((feedback) => (
+                                        <div
+                                          key={feedback.id}
+                                          className="bg-white border border-gray-200 rounded-lg p-3 hover:bg-gray-50"
+                                        >
+                                          <div className="flex justify-between items-center">
+                                            <div className="flex-1">
+                                              <p className="text-sm font-medium text-gray-900">
+                                                {feedback.templateTitle}
+                                              </p>
+                                              <div className="flex items-center gap-2 mt-1">
+                                                <p className="text-xs text-gray-500">
+                                                  <span className="font-medium">Sent by:</span>{" "}
+                                                  {feedback.sentBy}
+                                                </p>
+                                              </div>
+                                            </div>
+                                            <div className="text-xs text-gray-500">
+                                              {formatDateTime(feedback.sentAt)}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="text-xs text-gray-500">
-                                  {formatDateTime(feedback.sentAt)}
+                              )}
+
+                              {/* Action Log for this Job Opening */}
+                              {relatedActionLog.length > 0 && (
+                                <div className={`border-t border-gray-200 ${relatedFeedback.length > 0 ? 'bg-gray-50' : 'bg-gray-50'}`}>
+                                  <div className="px-4 py-3">
+                                    <h4 className="text-sm font-medium text-gray-700 mb-3">
+                                      Action Log
+                                    </h4>
+                                    <div className="space-y-2">
+                                      {relatedActionLog.map((log) => (
+                                        <div
+                                          key={log.id}
+                                          className="bg-white border border-gray-200 rounded-lg p-3 hover:bg-gray-50"
+                                        >
+                                          <div className="flex justify-between items-center">
+                                            <p className="text-xs text-gray-700">
+                                              <span className="font-medium">
+                                                {getActionLabel(log.action)}
+                                              </span>{" "}
+                                              {log.performedBy}
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                              {formatDateTime(log.performedAt)}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
+                              )}
                             </div>
                           );
                         })}
                       </div>
                     ) : (
-                      <div className="text-center py-8 border border-gray-200 rounded-lg">
-                        <p className="text-gray-500">
-                          No feedback history available
-                        </p>
+                      <div className="text-center py-12 border border-gray-200 rounded-lg">
+                        <p className="text-gray-500">No application history</p>
                       </div>
                     )}
                   </div>

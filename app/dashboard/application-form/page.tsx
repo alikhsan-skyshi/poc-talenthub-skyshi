@@ -19,7 +19,6 @@ export default function ApplicationFormPage() {
   const [forms, setForms] = useState<ApplicationForm[]>(dummyForms);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "open" | "closed">("all");
-  const [selectedFormIds, setSelectedFormIds] = useState<Set<string>>(new Set());
 
   // Filter and search forms
   const filteredForms = useMemo(() => {
@@ -75,43 +74,6 @@ export default function ApplicationFormPage() {
     }
   };
 
-  const handleBulkDelete = () => {
-    if (selectedFormIds.size === 0) {
-      alert("Please select at least one form to delete");
-      return;
-    }
-
-    if (
-      confirm(
-        `Are you sure you want to delete ${selectedFormIds.size} form(s)?`
-      )
-    ) {
-      setForms((prevForms) =>
-        prevForms.filter((form) => !selectedFormIds.has(form.id))
-      );
-      setSelectedFormIds(new Set());
-    }
-  };
-
-  const handleSelectForm = (formId: string, isSelected: boolean) => {
-    setSelectedFormIds((prev) => {
-      const newSet = new Set(prev);
-      if (isSelected) {
-        newSet.add(formId);
-      } else {
-        newSet.delete(formId);
-      }
-      return newSet;
-    });
-  };
-
-  const handleSelectAll = (isSelected: boolean) => {
-    if (isSelected) {
-      setSelectedFormIds(new Set(paginatedForms.map((form) => form.id)));
-    } else {
-      setSelectedFormIds(new Set());
-    }
-  };
 
   const handleCopyLink = async (formId: string) => {
     try {
@@ -177,27 +139,17 @@ export default function ApplicationFormPage() {
             <Button variant="primary" size="sm" onClick={handleCreateForm}>
               Create Form
             </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={handleBulkDelete}
-              disabled={selectedFormIds.size === 0}
-            >
-              Delete
-            </Button>
           </div>
         </div>
 
         <div className="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-100">
           <FormTable
             forms={paginatedForms}
-            selectedFormIds={selectedFormIds}
             onViewCandidates={handleViewCandidates}
             onEdit={handleEdit}
             onDelete={handleDelete}
             onCopyLink={handleCopyLink}
-            onSelectForm={handleSelectForm}
-            onSelectAll={handleSelectAll}
+            onRowClick={handleEdit}
           />
           {totalPages > 1 && (
             <Pagination

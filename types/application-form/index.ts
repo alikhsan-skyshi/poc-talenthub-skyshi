@@ -14,5 +14,6 @@ export interface ApplicationForm {
   applicantCount: number;
   status: FormStatus;
   createdAt: Date;
+  dueDate?: Date; // Due date for the job opening
   waves?: FormWave[]; // History of form opening/closing for wave tracking
 }

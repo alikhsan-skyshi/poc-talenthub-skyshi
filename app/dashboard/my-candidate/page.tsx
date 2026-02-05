@@ -57,7 +57,10 @@ export default function MyCandidatePage() {
 
   // Filter and search candidates
   const filteredCandidates = useMemo(() => {
-    let filtered = candidates;
+    // Only show candidates with stage "applied" or "cv_review" in In Review page
+    let filtered = candidates.filter(
+      (c) => c.stage === "applied" || c.stage === "cv_review"
+    );
 
     // Filter by stage
     if (stageFilter !== "all") {
@@ -558,55 +561,19 @@ export default function MyCandidatePage() {
             />
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleApprove}
-              disabled={selectedCandidateIds.size === 0}
-            >
-              Approve
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={handleBulkReject}
-              disabled={selectedCandidateIds.size === 0}
-            >
-              Reject
-            </Button>
-            <span className="text-gray-300 mx-1">|</span>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleSwitchJob}
-              disabled={selectedCandidateIds.size === 0}
-            >
-              Transfer
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleTakeOut}
-              disabled={selectedCandidateIds.size === 0}
-            >
-              Take Out
-            </Button>
-          </div>
         </div>
 
         <div className="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-100">
           <CandidateTable
             candidates={paginatedCandidates}
-            selectedCandidateIds={selectedCandidateIds}
             onReviewCV={handleReviewCV}
             onChatWhatsApp={handleChatWhatsApp}
-            onSelectCandidate={handleSelectCandidate}
-            onSelectAll={handleSelectAll}
             hideWhatsApp={true}
             useLocationType={true}
             hideNotSpecified={true}
+            hideActions={true}
+            showStatus={false}
+            onRowClick={handleReviewCV}
           />
           {totalPages > 1 && (
             <Pagination

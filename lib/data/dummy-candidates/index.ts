@@ -16,6 +16,29 @@ export const dummyCandidates: Candidate[] = [
     type: "full_time",
     preferredStartDate: new Date("2024-03-01"),
     phoneNumber: "+6281234567890",
+    actionLog: [
+      {
+        id: "log1",
+        action: "reviewed",
+        performedBy: "Sarah Johnson",
+        performedAt: new Date("2024-01-17T09:00:00"),
+        jobTitle: "Software Engineer - Full Stack",
+      },
+      {
+        id: "log2",
+        action: "approved",
+        performedBy: "Michael Chen",
+        performedAt: new Date("2024-01-18T14:30:00"),
+        jobTitle: "Software Engineer - Full Stack",
+      },
+      {
+        id: "log1-3",
+        action: "transfer",
+        performedBy: "David Lee",
+        performedAt: new Date("2024-01-19T11:00:00"),
+        jobTitle: "Software Engineer - Full Stack",
+      },
+    ],
   },
   {
     id: "2",
@@ -32,6 +55,29 @@ export const dummyCandidates: Candidate[] = [
     type: "part_time",
     preferredStartDate: new Date("2024-02-20"),
     phoneNumber: "+6281234567891",
+    actionLog: [
+      {
+        id: "log5",
+        action: "reviewed",
+        performedBy: "Robert Wilson",
+        performedAt: new Date("2024-02-06T08:30:00"),
+        jobTitle: "Product Manager",
+      },
+      {
+        id: "log6",
+        action: "approved",
+        performedBy: "Lisa Anderson",
+        performedAt: new Date("2024-02-07T15:45:00"),
+        jobTitle: "Product Manager",
+      },
+      {
+        id: "log2-3",
+        action: "rejected",
+        performedBy: "Emily Brown",
+        performedAt: new Date("2024-02-08T10:15:00"),
+        jobTitle: "Product Manager",
+      },
+    ],
   },
   {
     id: "3",
@@ -48,6 +94,29 @@ export const dummyCandidates: Candidate[] = [
     type: "full_time",
     preferredStartDate: new Date("2024-03-15"),
     phoneNumber: "+6281234567892",
+    actionLog: [
+      {
+        id: "log3",
+        action: "reviewed",
+        performedBy: "David Lee",
+        performedAt: new Date("2024-01-22T10:15:00"),
+        jobTitle: "UI/UX Designer",
+      },
+      {
+        id: "log4",
+        action: "rejected",
+        performedBy: "Emily Brown",
+        performedAt: new Date("2024-01-23T11:20:00"),
+        jobTitle: "UI/UX Designer",
+      },
+      {
+        id: "log3-3",
+        action: "transfer",
+        performedBy: "Thomas Martinez",
+        performedAt: new Date("2024-01-24T09:30:00"),
+        jobTitle: "UI/UX Designer",
+      },
+    ],
   },
   {
     id: "4",

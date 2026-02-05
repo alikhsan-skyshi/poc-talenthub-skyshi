@@ -19,6 +19,9 @@ interface CandidateTableProps {
   hideNotSpecified?: boolean; // If true, hide "Not specified" values
   hideWhatsApp?: boolean; // If true, hide WhatsApp icon in Actions column
   hideStage?: boolean; // If true, hide "Stage" or "Status" column
+  hideJobPost?: boolean; // If true, hide "Job Post" column
+  hideLocation?: boolean; // If true, hide "Location" column (when useLocationType is true)
+  showEmail?: boolean; // If true, show "Email" column after "Name"
 }
 
 export const CandidateTable: React.FC<CandidateTableProps> = ({
@@ -35,6 +38,9 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
   hideNotSpecified = false,
   hideWhatsApp = false,
   hideStage = false,
+  hideJobPost = false,
+  hideLocation = false,
+  showEmail = false,
 }) => {
   const allSelected =
     candidates.length > 0 &&
@@ -104,6 +110,15 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
 
     const config = stageConfig[stage];
 
+    // Fallback if stage is not in config
+    if (!config) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+          {stage}
+        </span>
+      );
+    }
+
     return (
       <span
         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.className}`}
@@ -171,30 +186,42 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
             >
               Applied At
             </th>
-            <th
-              scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Job Post
-            </th>
+            {!hideJobPost && (
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Job Post
+              </th>
+            )}
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
               Name
             </th>
+            {showEmail && (
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Email
+              </th>
+            )}
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
               Role
             </th>
-            <th
-              scope="col"
-              className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              {useLocationType ? "Location" : "Experience"}
-            </th>
+            {!(useLocationType && hideLocation) && (
+              <th
+                scope="col"
+                className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                {useLocationType ? "Location" : "Experience"}
+              </th>
+            )}
             <th
               scope="col"
               className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -224,7 +251,10 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
             <tr>
               <td
                 colSpan={
-                  6 + // Applied At, Job Post, Name, Role, Location/Experience, Type/Ready For
+                  4 + // Applied At, Name, Role, Type/Ready For
+                  (hideJobPost ? 0 : 1) + // Job Post
+                  (showEmail ? 1 : 0) + // Email
+                  (useLocationType && hideLocation ? 0 : 1) + // Location/Experience
                   (onSelectAll ? 1 : 0) + 
                   (hideStage ? 0 : 1) + 
                   (hideActions ? 0 : 1)
@@ -266,26 +296,35 @@ export const CandidateTable: React.FC<CandidateTableProps> = ({
                       {formatDate(candidate.appliedAt)}
                     </div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">
-                      {candidate.formTitle || (hideNotSpecified ? "" : "Not specified")}
-                    </div>
-                  </td>
+                  {!hideJobPost && (
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-900">
+                        {candidate.formTitle || (hideNotSpecified ? "" : "Not specified")}
+                      </div>
+                    </td>
+                  )}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {candidate.name}
                     </div>
                   </td>
+                  {showEmail && (
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{candidate.email}</div>
+                    </td>
+                  )}
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">{candidate.role}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <div className="text-sm text-gray-900">
-                      {useLocationType
-                        ? getLocationLabel(candidate.readyFor)
-                        : candidate.experience}
-                    </div>
-                  </td>
+                  {!(useLocationType && hideLocation) && (
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div className="text-sm text-gray-900">
+                        {useLocationType
+                          ? getLocationLabel(candidate.readyFor)
+                          : candidate.experience}
+                      </div>
+                    </td>
+                  )}
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <div className="text-sm text-gray-900">
                       {useLocationType
