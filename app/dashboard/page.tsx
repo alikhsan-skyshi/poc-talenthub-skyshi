@@ -193,7 +193,7 @@ export default function DashboardPage() {
           {/* Achievement Section */}
           <div className="bg-white shadow-sm rounded-xl p-4 border border-gray-100">
             <h2 className="text-lg font-semibold text-gray-900 mb-3">
-              Achievement
+              My Achievements
             </h2>
 
             {/* Date Range Filter */}
@@ -261,7 +261,7 @@ export default function DashboardPage() {
           <div className="bg-white shadow-sm rounded-xl p-4 border border-gray-100">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-semibold text-gray-900">
-                Latest Candidates
+                List of Candidates
               </h2>
               <Button
                 variant="primary"
@@ -301,6 +301,7 @@ export default function DashboardPage() {
           hideStageSelector={true}
           showApprovedButtons={true}
           onTransferApproved={selectedCandidate ? () => handleTransferSingle(selectedCandidate.id) : undefined}
+          transferButtonLabel="Add to Job"
         />
 
         {/* Switch Job Modal */}
@@ -312,6 +313,8 @@ export default function DashboardPage() {
           }}
           candidates={selectedCandidatesForSwitch}
           onConfirm={handleConfirmSwitchJob}
+          modalTitle="Add to Job"
+          buttonLabel="Add to Job"
         />
       </div>
     </DashboardLayout>

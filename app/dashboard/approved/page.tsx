@@ -22,6 +22,7 @@ export default function ApprovedPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCandidate, setSelectedCandidate] =
     useState<Candidate | null>(null);
+  const [selectedCandidateIndex, setSelectedCandidateIndex] = useState(-1);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -61,7 +62,34 @@ export default function ApprovedPage() {
     if (candidate) {
       const enrichedCandidate = enrichCandidateData(candidate);
       setSelectedCandidate(enrichedCandidate);
+      // Find index in filtered candidates
+      const index = filteredCandidates.findIndex((c) => c.id === candidateId);
+      setSelectedCandidateIndex(index);
       setIsReviewModalOpen(true);
+    }
+  };
+
+  const handlePreviousCandidate = () => {
+    if (selectedCandidateIndex > 0) {
+      const prevIndex = selectedCandidateIndex - 1;
+      const prevCandidate = filteredCandidates[prevIndex];
+      if (prevCandidate) {
+        const enrichedCandidate = enrichCandidateData(prevCandidate);
+        setSelectedCandidate(enrichedCandidate);
+        setSelectedCandidateIndex(prevIndex);
+      }
+    }
+  };
+
+  const handleNextCandidate = () => {
+    if (selectedCandidateIndex < filteredCandidates.length - 1) {
+      const nextIndex = selectedCandidateIndex + 1;
+      const nextCandidate = filteredCandidates[nextIndex];
+      if (nextCandidate) {
+        const enrichedCandidate = enrichCandidateData(nextCandidate);
+        setSelectedCandidate(enrichedCandidate);
+        setSelectedCandidateIndex(nextIndex);
+      }
     }
   };
 
@@ -144,11 +172,16 @@ export default function ApprovedPage() {
         onClose={() => {
           setIsReviewModalOpen(false);
           setSelectedCandidate(null);
+          setSelectedCandidateIndex(-1);
         }}
         candidate={selectedCandidate}
         onStageChange={handleStageChange}
         hideStageSelector={true}
         showApprovedButtons={true}
+        onPrevious={handlePreviousCandidate}
+        onNext={handleNextCandidate}
+        hasPrevious={selectedCandidateIndex > 0}
+        hasNext={selectedCandidateIndex >= 0 && selectedCandidateIndex < filteredCandidates.length - 1}
       />
 
     </DashboardLayout>

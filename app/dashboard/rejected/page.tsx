@@ -25,6 +25,7 @@ export default function RejectedPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCandidate, setSelectedCandidate] =
     useState<Candidate | null>(null);
+  const [selectedCandidateIndex, setSelectedCandidateIndex] = useState(-1);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isSwitchJobModalOpen, setIsSwitchJobModalOpen] = useState(false);
   const [selectedCandidatesForSwitch, setSelectedCandidatesForSwitch] =
@@ -67,7 +68,34 @@ export default function RejectedPage() {
     if (candidate) {
       const enrichedCandidate = enrichCandidateData(candidate);
       setSelectedCandidate(enrichedCandidate);
+      // Find index in filtered candidates
+      const index = filteredCandidates.findIndex((c) => c.id === candidateId);
+      setSelectedCandidateIndex(index);
       setIsReviewModalOpen(true);
+    }
+  };
+
+  const handlePreviousCandidate = () => {
+    if (selectedCandidateIndex > 0) {
+      const prevIndex = selectedCandidateIndex - 1;
+      const prevCandidate = filteredCandidates[prevIndex];
+      if (prevCandidate) {
+        const enrichedCandidate = enrichCandidateData(prevCandidate);
+        setSelectedCandidate(enrichedCandidate);
+        setSelectedCandidateIndex(prevIndex);
+      }
+    }
+  };
+
+  const handleNextCandidate = () => {
+    if (selectedCandidateIndex < filteredCandidates.length - 1) {
+      const nextIndex = selectedCandidateIndex + 1;
+      const nextCandidate = filteredCandidates[nextIndex];
+      if (nextCandidate) {
+        const enrichedCandidate = enrichCandidateData(nextCandidate);
+        setSelectedCandidate(enrichedCandidate);
+        setSelectedCandidateIndex(nextIndex);
+      }
     }
   };
 
@@ -185,6 +213,7 @@ export default function RejectedPage() {
         onClose={() => {
           setIsReviewModalOpen(false);
           setSelectedCandidate(null);
+          setSelectedCandidateIndex(-1);
         }}
         candidate={selectedCandidate}
         onStageChange={handleStageChange}
@@ -192,6 +221,10 @@ export default function RejectedPage() {
         showApprovedButtons={true}
         onTransferApproved={selectedCandidate ? () => handleTransferSingle(selectedCandidate.id) : undefined}
         transferButtonLabel="Add to Job"
+        onPrevious={handlePreviousCandidate}
+        onNext={handleNextCandidate}
+        hasPrevious={selectedCandidateIndex > 0}
+        hasNext={selectedCandidateIndex >= 0 && selectedCandidateIndex < filteredCandidates.length - 1}
       />
 
       <SwitchJobModal
