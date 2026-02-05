@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { CandidateTable } from "@/components/candidate/candidate-table";
 import { CandidateReviewModal } from "@/components/candidate/candidate-review-modal";
 import { SwitchJobModal } from "@/components/candidate/switch-job-modal";
 import { Pagination } from "@/components/ui/pagination";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ArrowLeftIcon } from "@/components/ui/icons";
 import { dummyCandidates } from "@/lib/data/dummy-candidates";
 import { enrichCandidateData } from "@/lib/data/candidate-details";
 import type {
@@ -19,6 +22,7 @@ import { getJobOpeningOptions, getJobOpeningById } from "@/lib/data/job-openings
 const ITEMS_PER_PAGE = 10;
 
 export default function ListOfCandidatesPage() {
+  const router = useRouter();
   const [candidates, setCandidates] = useState<Candidate[]>(dummyCandidates);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCandidate, setSelectedCandidate] =
@@ -140,7 +144,18 @@ export default function ListOfCandidatesPage() {
     <DashboardLayout>
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">List of Candidates</h1>
+          <div className="flex items-center gap-4 mb-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/dashboard")}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeftIcon className="w-4 h-4" />
+              Back
+            </Button>
+            <h1 className="text-2xl font-bold text-gray-900">List of Candidates</h1>
+          </div>
           <p className="text-sm text-gray-600 mt-1">
             View and manage all candidates
           </p>

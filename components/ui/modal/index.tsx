@@ -36,10 +36,10 @@ export const Modal: React.FC<ModalProps> = ({
           onClick={onClose}
         ></div>
         <div
-          className={`relative bg-white rounded-xl shadow-xl border border-gray-100 ${sizeStyles[size]} w-full`}
+          className={`relative bg-white rounded-xl shadow-xl border border-gray-100 ${sizeStyles[size]} w-full max-h-[90vh] flex flex-col`}
         >
           {title && (
-            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+            <div className="flex items-center justify-between p-6 border-b border-gray-100 flex-shrink-0">
               <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
               <IconButton
                 icon={<XMarkIcon />}
@@ -50,7 +50,7 @@ export const Modal: React.FC<ModalProps> = ({
               />
             </div>
           )}
-          <div className="p-6">{children}</div>
+          <div className="p-6 overflow-y-auto flex-1">{children}</div>
         </div>
       </div>
     </div>
